@@ -29,4 +29,6 @@ app/frontend/src/{lib/content.ts, pages/Index.tsx, index.css}, app/frontend/DESI
 
 ## Implementation Guide
 Edit tools/copy only in content.ts; keep layout free of horizontal overflow at 390px.
+Sections: Header, Hero (BrowserFrame mockups), Stats, Tools, How, Example (BandChart), Safety, Footer in src/pages/Index.tsx; BrowserFrame in src/components/site/.
+Screenshots: public/shots/*.webp captured by scripts/capture_shots.py (Python Playwright + Pillow, 1440x900, retry then placeholder).
 
