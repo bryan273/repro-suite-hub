@@ -108,6 +108,7 @@ export default function Index() {
                 <span className="sr-only">{t.opensNewTab}</span>
               </a>
             </div>
+            <p className="mt-6 text-sm text-[hsl(var(--subtle))]">{t.credit}</p>
           </div>
 
           <aside
