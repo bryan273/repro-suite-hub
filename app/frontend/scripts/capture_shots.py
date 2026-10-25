@@ -1,6 +1,7 @@
 """Capture live app screenshots at 1440x900 and save optimized WebP to public/shots/."""
 import asyncio
 import io
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
@@ -16,7 +17,11 @@ SHOTS = [
     ("readingcompanion", "Reading Companion", "https://readingcompanion-aiid.pub.atoms.world", None),
     ("indexboard", "IndexBoard", "https://indexboard-aiid.pub.atoms.world/b/5dhum9j5h0", None),
     ("reprodesk", "Repro Desk", "https://reprodesk-aiid.pub.atoms.world", None),
+    ("paperexplainer", "Paper Explainer", "https://paperexplainer-aiid.pub.atoms.world", None),
 ]
+
+# Optional CLI filter: `python3 capture_shots.py paperexplainer reprolite`
+ONLY = set(sys.argv[1:])
 
 
 def save_webp(png: bytes, name: str) -> None:
@@ -56,6 +61,8 @@ async def main() -> None:
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         for name, title, url, click in SHOTS:
+            if ONLY and name not in ONLY:
+                continue
             for attempt in (1, 2):
                 try:
                     save_webp(await capture(browser, url, click), name)

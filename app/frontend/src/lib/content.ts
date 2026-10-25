@@ -20,6 +20,7 @@ export const SHOTS = {
   readingcompanion: '/shots/readingcompanion.webp',
   indexboard: '/shots/indexboard.webp',
   reprodesk: '/shots/reprodesk.webp',
+  paperexplainer: '/shots/paperexplainer.webp',
 } as const;
 
 export const TOOLS: Tool[] = [
@@ -87,6 +88,20 @@ export const TOOLS: Tool[] = [
     },
     audience: { en: 'Labs and authors', zh: '实验室与论文作者' },
   },
+  {
+    id: 'paper-explainer',
+    url: 'https://paperexplainer-aiid.pub.atoms.world',
+    shot: SHOTS.paperexplainer,
+    name: { en: 'Paper Explainer', zh: 'Paper Explainer' },
+    line: {
+      en: 'Turn a paper into a short cinematic explainer video; the first 20 seconds are free, and you can make a preview of your own paper.',
+      zh: '把一篇论文变成一段简短的电影感讲解视频；前 20 秒免费，你也可以为自己的论文制作预览。',
+    },
+    audience: {
+      en: 'Authors promoting a new paper, and readers who want a quick overview',
+      zh: '推广新论文的作者，以及想快速了解概要的读者',
+    },
+  },
 ];
 
 export const STATS: { value: string; label: L }[] = [
@@ -94,7 +109,7 @@ export const STATS: { value: string; label: L }[] = [
   { value: '6', label: { en: 'models compared', zh: '个模型对比' } },
   { value: '281', label: { en: 'benchmark runs', zh: '次基准运行' } },
   { value: '~7 pt', label: { en: 'run-to-run noise measured', zh: '实测运行间噪声' } },
-  { value: '5', label: { en: 'live tools', zh: '个在线工具' } },
+  { value: '6', label: { en: 'live tools', zh: '个在线工具' } },
 ];
 
 export type StepIcon = 'read' | 'tolerance' | 'code' | 'rerun' | 'audit';
@@ -185,7 +200,7 @@ export const COPY = {
     heroKicker: 'Research reproducibility suite',
     heroTitle: 'Does the research claim really hold?',
     heroLine:
-      'Five focused tools to read, test, and track scientific claims, all opened from one place.',
+      'Six focused tools to read, test, track, and explain scientific claims, all opened from one place.',
     explore: 'Explore the tools',
     demo: 'Watch the demo',
     credit: 'Built on Atoms by Group 1, Tsinghua SIGS AIID capstone.',
@@ -219,7 +234,7 @@ export const COPY = {
     exShotCaption: 'Paper Repro Agent, Benchmark tab',
     safeKicker: 'Infrastructure',
     safeTitle: 'Shared, safe back end',
-    safeLine: 'All five tools sit on one back end designed to keep keys and code safe.',
+    safeLine: 'All six tools sit on one back end designed to keep keys and code safe.',
     footTeam: 'Group 1, Tsinghua SIGS AIID capstone',
     footPartners: 'Partners: DeepWisdom and StepFun',
     footBuilt: 'Built on Atoms.',
@@ -232,7 +247,7 @@ export const COPY = {
     nav: { tools: '工具', how: '工作方式', example: '示例' },
     heroKicker: '科研可复现性工具集',
     heroTitle: '这项研究结论真的站得住吗？',
-    heroLine: '五款专注的工具，帮你阅读、检验并追踪科研结论，一处即可打开。',
+    heroLine: '六款专注的工具，帮你阅读、检验、追踪并讲解科研结论，一处即可打开。',
     explore: '浏览工具',
     demo: '观看演示',
     credit: '由清华大学深圳国际研究生院 AIID 毕业设计第 1 组基于 Atoms 构建。',
@@ -266,7 +281,7 @@ export const COPY = {
     exShotCaption: 'Paper Repro Agent 的 Benchmark 页面',
     safeKicker: '基础设施',
     safeTitle: '共享、安全的后端',
-    safeLine: '五款工具共用同一个后端，确保密钥与代码的安全。',
+    safeLine: '六款工具共用同一个后端，确保密钥与代码的安全。',
     footTeam: '清华大学深圳国际研究生院 AIID 毕业设计第 1 组',
     footPartners: '合作伙伴：DeepWisdom 与 StepFun',
     footBuilt: '基于 Atoms 构建。',
