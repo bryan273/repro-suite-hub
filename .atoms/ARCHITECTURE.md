@@ -1,0 +1,32 @@
+---
+last_updated: 2026-10-25T07:20:04Z
+---
+
+# Architecture Design
+
+## System Overview
+Static single-page hub "Repro Suite" that links to five external apps (new tab). No backend, no keys.
+
+## Tech Stack
+Vite + React + TypeScript + Tailwind (shadcn template). Fonts: Source Serif 4, IBM Plex Sans (Google Fonts).
+
+## Module Design
+| Module | Responsibility | Key Files |
+|--------|---------------|-----------|
+| Content | EN/ZH copy + tool data | src/lib/content.ts |
+| Page | Header toggles, hero + ledger, tool cards, footer | src/pages/Index.tsx |
+| Theme | Light/dark CSS tokens | src/index.css |
+
+## Tech Decisions
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| i18n | Local state + COPY dictionary, persisted to localStorage | Two languages, static content |
+| Theme | `.dark` class on html, persisted | Matches tailwind darkMode: class |
+| Demo button | Opens Paper Repro Agent in new tab | No separate demo URL supplied |
+
+## File Tree Plan
+app/frontend/src/{lib/content.ts, pages/Index.tsx, index.css}, app/frontend/DESIGN.md
+
+## Implementation Guide
+Edit tools/copy only in content.ts; keep layout free of horizontal overflow at 390px.
+
