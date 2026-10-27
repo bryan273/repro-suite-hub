@@ -22,13 +22,14 @@ const text2 = 'text-[color:var(--text2)]';
 
 interface FeedItem {
   title?: string;
-  videos?: { en?: string };
+  videos?: { en?: string; zh?: string };
 }
 
 interface Feed {
   status: 'loading' | 'ok' | 'error';
   count: number;
-  video?: string;
+  videoEn?: string;
+  videoZh?: string;
   title?: string;
 }
 
@@ -44,7 +45,13 @@ function useExplainerFeed(): Feed {
       .then((list) => {
         if (!Array.isArray(list)) throw new Error('bad feed');
         const first = list[0];
-        setFeed({ status: 'ok', count: list.length, video: first?.videos?.en, title: first?.title });
+        setFeed({
+          status: 'ok',
+          count: list.length,
+          videoEn: first?.videos?.en,
+          videoZh: first?.videos?.zh,
+          title: first?.title,
+        });
       })
       .catch((e: unknown) => {
         if ((e as Error).name !== 'AbortError') setFeed({ status: 'error', count: 0 });
@@ -72,7 +79,8 @@ function Shot({ src, alt }: { src: string; alt: string }) {
       alt={alt}
       width={1440}
       height={900}
-      decoding="async"
+      loading="eager"
+      decoding="sync"
       className="block aspect-[16/10] w-full rounded-xl border border-[color:var(--line)] bg-[var(--soft)] object-cover object-top"
     />
   );
@@ -193,15 +201,17 @@ function Tag({ label, name }: { label: string; name: string }) {
   );
 }
 
-function ExplainerCard({ t, feed }: { t: Copy; feed: Feed }) {
+function ExplainerCard({ t, lang, feed }: { t: Copy; lang: Lang; feed: Feed }) {
+  const video = lang === 'zh' ? feed.videoZh ?? feed.videoEn : feed.videoEn ?? feed.videoZh;
   return (
     <article className="rs-card flex min-w-0 flex-col p-5 sm:p-6">
-      {feed.status === 'ok' && feed.video ? (
+      {feed.status === 'ok' && video ? (
         <video
+          key={video}
           controls
           preload="metadata"
           playsInline
-          src={`${feed.video}#t=2`}
+          src={`${video}#t=2`}
           aria-label={t.videoLabel(feed.title ?? 'Paper Explainer')}
           className="block aspect-[16/10] w-full rounded-xl border border-[color:var(--line)] bg-black object-contain"
         />
@@ -460,7 +470,7 @@ export default function Index() {
           </section>
 
           <section className="mt-16 grid gap-6 sm:mt-20 md:grid-cols-2">
-            <ExplainerCard t={t} feed={feed} />
+            <ExplainerCard t={t} lang={lang} feed={feed} />
             <ReproCard t={t} lang={lang} />
           </section>
 
