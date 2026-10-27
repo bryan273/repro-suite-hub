@@ -1,295 +1,179 @@
 export type Lang = 'en' | 'zh';
 type L = Record<Lang, string>;
 
-export interface Tool {
-  id: string;
-  url: string;
-  shot: string;
-  name: L;
-  line: L;
-  audience: L;
-}
-
-export const DEMO_URL = 'https://paperrepro-aiid.atoms.world';
-export const RECORDED_RUN_URL = 'https://paperrepro-aiid.atoms.world';
-
-export const SHOTS = {
-  paperrepro: '/shots/paperrepro.webp',
-  benchmark: '/shots/paperrepro-benchmark.webp',
-  reprolite: '/shots/reprolite.webp',
-  readingcompanion: '/shots/readingcompanion.webp',
-  indexboard: '/shots/indexboard.webp',
-  reprodesk: '/shots/reprodesk.webp',
-  paperexplainer: '/shots/paperexplainer.webp',
+export const URLS = {
+  explainer: 'https://paperexplainer-aiid.pub.atoms.world',
+  repro: 'https://paperrepro-aiid.atoms.world/repro/index.html',
+  reproLite: 'https://reprolite-aiid.pub.atoms.world',
+  reading: 'https://readingcompanion-aiid.pub.atoms.world',
+  indexboard: 'https://indexboard-aiid.pub.atoms.world/b/5dhum9j5h0',
+  reproDesk: 'https://reprodesk-aiid.pub.atoms.world',
+  benchmark: 'https://paperrepro-aiid.atoms.world/repro/bench.html',
 } as const;
 
-export const TOOLS: Tool[] = [
+export const EXPLAINER_FEED = 'https://vzvyghmtsakixlhzzuol.supabase.co/functions/v1/explainer-render?recent=1';
+
+export const SHOTS = {
+  explainer: '/shots/paperexplainer.webp',
+  repro: '/shots/paperrepro.webp',
+  reproLite: '/shots/reprolite.webp',
+  reading: '/shots/readingcompanion.webp',
+  indexboard: '/shots/indexboard.webp',
+  reproDesk: '/shots/reprodesk.webp',
+} as const;
+
+export interface NavLink {
+  name: string;
+  url: string;
+}
+
+export const NAV_GROUPS: { title: L; links: NavLink[] }[] = [
   {
-    id: 'paper-repro-agent',
-    url: 'https://paperrepro-aiid.atoms.world',
-    shot: SHOTS.paperrepro,
-    name: { en: 'Paper Repro Agent', zh: 'Paper Repro Agent' },
-    line: {
-      en: 'Give it a paper and it checks whether the headline number reproduces: reads, fixes the tolerance, writes code, re-runs clean, audits.',
-      zh: '给它一篇论文，它会检验核心数字能否复现：阅读论文、确定容差、编写代码、干净重跑、完成审计。',
-    },
-    audience: { en: 'Researchers and reviewers', zh: '研究者与审稿人' },
+    title: { en: 'Main products', zh: '主要产品' },
+    links: [
+      { name: 'Paper Explainer', url: URLS.explainer },
+      { name: 'Paper Repro Agent', url: URLS.repro },
+    ],
   },
   {
-    id: 'repro-lite',
-    url: 'https://reprolite-aiid.pub.atoms.world',
-    shot: SHOTS.reprolite,
-    name: { en: 'Repro Lite', zh: 'Repro Lite' },
+    title: { en: 'Supporting tools', zh: '辅助工具' },
+    links: [
+      { name: 'Repro Lite', url: URLS.reproLite },
+      { name: 'Reading Companion', url: URLS.reading },
+      { name: 'IndexBoard', url: URLS.indexboard },
+      { name: 'Repro Desk', url: URLS.reproDesk },
+    ],
+  },
+  {
+    title: { en: 'Research', zh: '研究' },
+    links: [{ name: 'Benchmark', url: URLS.benchmark }],
+  },
+];
+
+export const REPRO_FACTS: { value: string; label: L }[] = [
+  { value: '6', label: { en: 'models', zh: '个模型' } },
+  { value: '32', label: { en: 'papers', zh: '篇论文' } },
+  { value: '281', label: { en: 'runs', zh: '次运行' } },
+  { value: '89.2', label: { en: 'best Repro Index', zh: '最佳 Repro Index' } },
+];
+
+export const FLOW: { name: L; role: L; url?: string }[] = [
+  { name: { en: 'Paper', zh: '论文' }, role: { en: 'an AI research paper', zh: '一篇 AI 研究论文' } },
+  { name: { en: 'Explainer', zh: 'Explainer' }, role: { en: 'understand it', zh: '理解它' }, url: URLS.explainer },
+  { name: { en: 'Repro Agent', zh: 'Repro Agent' }, role: { en: 'check it', zh: '检验它' }, url: URLS.repro },
+  { name: { en: 'Benchmark', zh: 'Benchmark' }, role: { en: 'compare models', zh: '比较模型' }, url: URLS.benchmark },
+];
+
+export const SUPPORTING: { name: string; url: string; shot: string; line: L }[] = [
+  {
+    name: 'Repro Lite',
+    url: URLS.reproLite,
+    shot: SHOTS.reproLite,
     line: {
       en: 'Check one claim in about 40 seconds; the agent runs Python in your browser.',
       zh: '约 40 秒检验一个结论；智能体直接在你的浏览器中运行 Python。',
     },
-    audience: {
-      en: 'Students and readers who want a quick check',
-      zh: '想要快速核查的学生与读者',
-    },
   },
   {
-    id: 'reading-companion',
-    url: 'https://readingcompanion-aiid.pub.atoms.world',
-    shot: SHOTS.readingcompanion,
-    name: { en: 'Reading Companion', zh: 'Reading Companion' },
+    name: 'Reading Companion',
+    url: URLS.reading,
+    shot: SHOTS.reading,
     line: {
-      en: 'An agent reads arXiv papers with you, saves quoted notes, cites every claim and marks what it could not verify.',
-      zh: '智能体陪你阅读 arXiv 论文，保存附带原文引用的笔记，为每个结论注明出处，并标出它无法核实的内容。',
-    },
-    audience: {
-      en: 'Anyone reading papers outside their own field',
-      zh: '阅读本领域之外论文的任何人',
+      en: 'An agent reads arXiv papers with you, cites every claim and marks what it could not verify.',
+      zh: '智能体陪你阅读 arXiv 论文，为每个结论注明出处，并标出无法核实的内容。',
     },
   },
   {
-    id: 'indexboard',
-    url: 'https://indexboard-aiid.pub.atoms.world',
+    name: 'IndexBoard',
+    url: URLS.indexboard,
     shot: SHOTS.indexboard,
-    name: { en: 'IndexBoard', zh: 'IndexBoard' },
     line: {
-      en: 'Turn any results, or just a sentence, into an honest leaderboard with intervals and ties; AI can build the board and pull live model data.',
-      zh: '把任意结果，甚至只是一句话，变成一份标注置信区间与并列名次的诚实排行榜；AI 可以搭建榜单并拉取实时模型数据。',
-    },
-    audience: {
-      en: 'Evaluation teams and anyone comparing models',
-      zh: '评测团队以及任何需要比较模型的人',
+      en: 'Turn any results into an honest leaderboard with intervals and ties.',
+      zh: '把任意结果变成一份标注置信区间与并列名次的诚实排行榜。',
     },
   },
   {
-    id: 'repro-desk',
-    url: 'https://reprodesk-aiid.pub.atoms.world',
-    shot: SHOTS.reprodesk,
-    name: { en: 'Repro Desk', zh: 'Repro Desk' },
+    name: 'Repro Desk',
+    url: URLS.reproDesk,
+    shot: SHOTS.reproDesk,
     line: {
-      en: 'Ask for a human-checked reproduction of a paper; a free pilot to test real demand.',
-      zh: '申请一次经人工核查的论文复现；这是一个用于检验真实需求的免费试点。',
-    },
-    audience: { en: 'Labs and authors', zh: '实验室与论文作者' },
-  },
-  {
-    id: 'paper-explainer',
-    url: 'https://paperexplainer-aiid.pub.atoms.world',
-    shot: SHOTS.paperexplainer,
-    name: { en: 'Paper Explainer', zh: 'Paper Explainer' },
-    line: {
-      en: 'Turn a paper into a short cinematic explainer video; the first 20 seconds are free, and you can make a preview of your own paper.',
-      zh: '把一篇论文变成一段简短的电影感讲解视频；前 20 秒免费，你也可以为自己的论文制作预览。',
-    },
-    audience: {
-      en: 'Authors promoting a new paper, and readers who want a quick overview',
-      zh: '推广新论文的作者，以及想快速了解概要的读者',
-    },
-  },
-];
-
-export const STATS: { value: string; label: L }[] = [
-  { value: '32', label: { en: 'papers', zh: '篇论文' } },
-  { value: '6', label: { en: 'models compared', zh: '个模型对比' } },
-  { value: '281', label: { en: 'benchmark runs', zh: '次基准运行' } },
-  { value: '~7 pt', label: { en: 'run-to-run noise measured', zh: '实测运行间噪声' } },
-  { value: '6', label: { en: 'live tools', zh: '个在线工具' } },
-];
-
-export type StepIcon = 'read' | 'tolerance' | 'code' | 'rerun' | 'audit';
-
-export const STEPS: { icon: StepIcon; title: L; text: L }[] = [
-  {
-    icon: 'read',
-    title: { en: 'Read the paper', zh: '阅读论文' },
-    text: {
-      en: 'The agent reads the paper and pins down the exact claim and headline number to test.',
-      zh: '智能体阅读论文，锁定要检验的具体结论与核心数字。',
-    },
-  },
-  {
-    icon: 'tolerance',
-    title: { en: 'Fix the tolerance before running', zh: '运行前确定容差' },
-    text: {
-      en: 'An acceptance band is set in advance, so the verdict cannot be tuned after the fact.',
-      zh: '事先设定可接受区间，结论无法在事后被调整。',
-    },
-  },
-  {
-    icon: 'code',
-    title: { en: 'Write and run code', zh: '编写并运行代码' },
-    text: {
-      en: "It implements the method from the paper's description and runs the experiment.",
-      zh: '依据论文描述实现方法，并运行实验。',
-    },
-  },
-  {
-    icon: 'rerun',
-    title: { en: 'Clean re-run from scratch', zh: '从头干净重跑' },
-    text: {
-      en: 'The code runs again in a fresh environment to rule out leftover state.',
-      zh: '在全新环境中从头再跑一次，排除残留状态的影响。',
-    },
-  },
-  {
-    icon: 'audit',
-    title: { en: 'Audit and verdict', zh: '审计与结论' },
-    text: {
-      en: 'Each step is audited and the result is compared with the band to reach a verdict.',
-      zh: '审计每一步，并将结果与预设区间对比，得出结论。',
-    },
-  },
-];
-
-export const EXAMPLE = {
-  reported: 0.85,
-  reproduced: 0.849,
-  tolerance: 0.03,
-  axisMin: 0.8,
-  axisMax: 0.9,
-};
-
-export type SafetyIcon = 'key' | 'browser' | 'lang';
-
-export const SAFETY: { icon: SafetyIcon; title: L; text: L }[] = [
-  {
-    icon: 'key',
-    title: { en: 'The key stays on the server', zh: '密钥留在服务器端' },
-    text: {
-      en: 'Model API keys sit on the server behind a rate-limited gateway and never reach the browser.',
-      zh: '模型 API 密钥保存在服务器端、位于限流网关之后，绝不会进入浏览器。',
-    },
-  },
-  {
-    icon: 'browser',
-    title: { en: 'Agent code runs in your browser', zh: '智能体代码在你的浏览器中运行' },
-    text: {
-      en: "Code written by the agent executes in the visitor's browser, not on a shared machine.",
-      zh: '智能体编写的代码在访问者的浏览器中执行，而不是在共享机器上。',
-    },
-  },
-  {
-    icon: 'lang',
-    title: { en: 'Bilingual throughout', zh: '全程中英双语' },
-    text: {
-      en: 'Every tool works in both English and Chinese.',
-      zh: '每一款工具都同时支持英文与中文。',
+      en: 'Ask for a human-checked reproduction of a paper, as a free pilot.',
+      zh: '以免费试点的形式，申请一次经人工核查的论文复现。',
     },
   },
 ];
 
 export const COPY = {
   en: {
-    nav: { tools: 'Tools', how: 'How it works', example: 'Example' },
-    heroKicker: 'Research reproducibility suite',
-    heroTitle: 'Does the research claim really hold?',
-    heroLine:
-      'Six focused tools to read, test, track, and explain scientific claims, all opened from one place.',
-    explore: 'Explore the tools',
-    demo: 'Watch the demo',
-    credit: 'Built on Atoms by Group 1, Tsinghua SIGS AIID capstone.',
-    statsLabel: 'Results so far',
-    toolsKicker: 'The tools',
-    toolsTitle: 'Pick the right tool for the question',
-    toolsLine: 'Each tool opens in a new tab.',
-    forLabel: 'For',
+    tagline: 'Learn a paper. Then check it.',
+    menu: 'Open menu',
+    close: 'Close menu',
+    newTab: '(opens in a new tab)',
+    themeToDark: 'Switch to dark mode',
+    themeToLight: 'Switch to light mode',
+    langLabel: 'Language',
+    eyebrow: 'Repro Suite',
+    heroTitle: 'Learn a paper. Then check it.',
+    heroSub:
+      'Two tools for AI research papers: a short narrated video that explains the paper, and an agent that re-runs the experiment and tells you whether the number holds.',
+    explain: 'Explain a paper',
+    check: 'Check a paper',
+    learnTag: 'Learn',
+    checkTag: 'Check',
+    explainerText:
+      'Paste an arXiv link and get a 40 second video in English and 中文. Every quote and number on screen is checked against the paper.',
+    videosMade: ['', 'videos made'] as [string, string],
+    videosLoading: 'Loading recent videos…',
+    videosError: 'Recent videos are unavailable right now.',
+    videoLabel: (title: string) => `Paper Explainer video: ${title}`,
+    makeVideo: 'Make a video',
+    reproText:
+      'The agent reads the paper, fixes a tolerance before any code runs, writes and runs the code, re-runs it from scratch and gives a verdict.',
+    watchRepro: 'Watch a reproduction',
+    shotAlt: (name: string) => `Screenshot of ${name}`,
+    fitTitle: 'How they fit together',
+    fitSub: 'One path from reading a paper to trusting its numbers.',
+    supportTitle: 'Supporting tools',
+    supportSub: 'Smaller tools around the same workflow.',
     open: 'Open',
-    opensNewTab: '(opens in a new tab)',
-    shotAlt: 'Screenshot of',
-    howKicker: 'Method',
-    howTitle: 'How a check works',
-    howLine: 'The same five steps behind every reproduction.',
-    exKicker: 'Example result',
-    exTitle: 'Isolation Forest, from the paper alone',
-    exVerdict: 'Inside the band',
-    exInput: 'Input',
-    exInputValue: 'Paper only',
-    exReported: 'Reported AUC',
-    exReproduced: 'Reproduced, clean re-run',
-    exBand: 'Tolerance band',
-    exBandValue: '±0.03, set before running',
-    exTime: 'Time',
-    exTimeValue: '23 min',
-    exCost: 'Cost',
-    exCostValue: 'about ¥0.53',
-    exAxisReported: 'reported',
-    exAxisReproduced: 'reproduced',
-    exLink: 'See the recorded run',
-    exShotCaption: 'Paper Repro Agent, Benchmark tab',
-    safeKicker: 'Infrastructure',
-    safeTitle: 'Shared, safe back end',
-    safeLine: 'All six tools sit on one back end designed to keep keys and code safe.',
     footTeam: 'Group 1, Tsinghua SIGS AIID capstone',
     footPartners: 'Partners: DeepWisdom and StepFun',
-    footBuilt: 'Built on Atoms.',
-    footTools: 'Tools',
-    themeToLight: 'Switch to light mode',
-    themeToDark: 'Switch to dark mode',
-    langLabel: 'Language',
+    footApps: 'All apps',
   },
   zh: {
-    nav: { tools: '工具', how: '工作方式', example: '示例' },
-    heroKicker: '科研可复现性工具集',
-    heroTitle: '这项研究结论真的站得住吗？',
-    heroLine: '六款专注的工具，帮你阅读、检验、追踪并讲解科研结论，一处即可打开。',
-    explore: '浏览工具',
-    demo: '观看演示',
-    credit: '由清华大学深圳国际研究生院 AIID 毕业设计第 1 组基于 Atoms 构建。',
-    statsLabel: '目前的结果',
-    toolsKicker: '工具',
-    toolsTitle: '为你的问题选对工具',
-    toolsLine: '每个工具都会在新标签页中打开。',
-    forLabel: '适用',
+    tagline: '先读懂论文，再检验它。',
+    menu: '打开菜单',
+    close: '关闭菜单',
+    newTab: '（在新标签页打开）',
+    themeToDark: '切换到深色模式',
+    themeToLight: '切换到浅色模式',
+    langLabel: '语言',
+    eyebrow: 'Repro Suite',
+    heroTitle: '先读懂论文，再检验它。',
+    heroSub:
+      '两款面向 AI 研究论文的工具：一段讲解论文的简短配音视频，以及一个重新运行实验、告诉你数字是否站得住的智能体。',
+    explain: '讲解一篇论文',
+    check: '检验一篇论文',
+    learnTag: '学习',
+    checkTag: '检验',
+    explainerText: '粘贴一个 arXiv 链接，即可得到一段 40 秒的中英文视频。屏幕上的每一句引文和每一个数字都与论文原文核对过。',
+    videosMade: ['已制作', '个视频'] as [string, string],
+    videosLoading: '正在加载最新视频…',
+    videosError: '暂时无法获取最新视频。',
+    videoLabel: (title: string) => `Paper Explainer 视频：${title}`,
+    makeVideo: '制作视频',
+    reproText: '智能体阅读论文，在运行任何代码之前确定容差，编写并运行代码，从头重新运行，最后给出结论。',
+    watchRepro: '观看一次复现',
+    shotAlt: (name: string) => `${name} 截图`,
+    fitTitle: '它们如何协同',
+    fitSub: '从读懂一篇论文到信任其中的数字，一条完整的路径。',
+    supportTitle: '辅助工具',
+    supportSub: '围绕同一工作流的小工具。',
     open: '打开',
-    opensNewTab: '（在新标签页打开）',
-    shotAlt: '截图：',
-    howKicker: '方法',
-    howTitle: '一次检验如何进行',
-    howLine: '每一次复现背后都是同样的五个步骤。',
-    exKicker: '示例结果',
-    exTitle: 'Isolation Forest，仅凭论文复现',
-    exVerdict: '落在区间内',
-    exInput: '输入',
-    exInputValue: '仅论文',
-    exReported: '论文报告 AUC',
-    exReproduced: '复现结果（干净重跑）',
-    exBand: '容差区间',
-    exBandValue: '±0.03，运行前设定',
-    exTime: '用时',
-    exTimeValue: '23 分钟',
-    exCost: '成本',
-    exCostValue: '约 ¥0.53',
-    exAxisReported: '报告值',
-    exAxisReproduced: '复现值',
-    exLink: '查看录制的运行',
-    exShotCaption: 'Paper Repro Agent 的 Benchmark 页面',
-    safeKicker: '基础设施',
-    safeTitle: '共享、安全的后端',
-    safeLine: '六款工具共用同一个后端，确保密钥与代码的安全。',
     footTeam: '清华大学深圳国际研究生院 AIID 毕业设计第 1 组',
     footPartners: '合作伙伴：DeepWisdom 与 StepFun',
-    footBuilt: '基于 Atoms 构建。',
-    footTools: '工具',
-    themeToLight: '切换到浅色模式',
-    themeToDark: '切换到深色模式',
-    langLabel: '语言',
+    footApps: '全部应用',
   },
-} as const;
+};
 
-export type Copy = (typeof COPY)[Lang];
+export type Copy = (typeof COPY)['en'];

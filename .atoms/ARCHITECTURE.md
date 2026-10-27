@@ -29,6 +29,7 @@ app/frontend/src/{lib/content.ts, pages/Index.tsx, index.css}, app/frontend/DESI
 
 ## Implementation Guide
 Edit tools/copy only in content.ts; keep layout free of horizontal overflow at 390px.
-Sections: Header, Hero (BrowserFrame mockups), Stats, Tools, How, Example (BandChart), Safety, Footer in src/pages/Index.tsx; BrowserFrame in src/components/site/.
+v3 (refocus): Inter/Noto Sans SC/JetBrains Mono, palette tokens (--bg/--card/--soft/--text/--text2/--line/--accent/--tint) in index.css matching paperrepro /repro design; theme key "repro.theme2" (light default).
+Layout: 248px sticky sidebar (drawer + top bar <900px), hero, two main product cards (Explainer video from Supabase explainer-render?recent=1 feed videos.en + "#t=2", count = list length; Repro Agent screenshot + facts), flow diagram, 4 supporting tool cards, footer. All in src/pages/Index.tsx.
 Screenshots: public/shots/*.webp captured by scripts/capture_shots.py (Python Playwright + Pillow, 1440x900, retry then placeholder).
 

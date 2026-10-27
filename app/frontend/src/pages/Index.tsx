@@ -1,472 +1,480 @@
-import { useEffect, useState } from 'react';
-import {
-  ArrowRight,
-  ArrowUpRight,
-  BookOpen,
-  CheckCircle2,
-  Code2,
-  KeyRound,
-  Languages,
-  MonitorSmartphone,
-  Moon,
-  RotateCcw,
-  Ruler,
-  ShieldCheck,
-  Sun,
-  type LucideIcon,
-} from 'lucide-react';
-import BrowserFrame from '@/components/site/BrowserFrame';
+import { useEffect, useState, type ReactNode } from 'react';
 import {
   COPY,
-  DEMO_URL,
-  EXAMPLE,
-  RECORDED_RUN_URL,
-  SAFETY,
+  EXPLAINER_FEED,
+  FLOW,
+  NAV_GROUPS,
+  REPRO_FACTS,
   SHOTS,
-  STATS,
-  STEPS,
-  TOOLS,
+  SUPPORTING,
+  URLS,
   type Copy,
   type Lang,
-  type SafetyIcon,
-  type StepIcon,
 } from '@/lib/content';
 
 type Theme = 'light' | 'dark';
 
-const STEP_ICONS: Record<StepIcon, LucideIcon> = {
-  read: BookOpen,
-  tolerance: Ruler,
-  code: Code2,
-  rerun: RotateCcw,
-  audit: ShieldCheck,
-};
-const SAFETY_ICONS: Record<SafetyIcon, LucideIcon> = {
-  key: KeyRound,
-  browser: MonitorSmartphone,
-  lang: Languages,
-};
-
-const serif = 'font-serif-display';
-const wrap = 'mx-auto w-full max-w-[1200px] px-5 sm:px-8 lg:px-10';
-const kicker = 'text-[13px] font-medium uppercase tracking-[0.08em] text-primary';
-const caption = 'text-[13px] font-medium uppercase tracking-[0.08em] text-[hsl(var(--subtle))]';
-const focusRing =
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
-const btnBase = `inline-flex h-11 items-center justify-center gap-2 rounded-lg px-5 text-[15px] font-medium transition-colors duration-150 ${focusRing}`;
-const btnPrimary = `${btnBase} bg-primary text-primary-foreground hover:bg-[hsl(var(--primary-hover))]`;
-const btnSecondary = `${btnBase} border border-border !bg-transparent text-foreground hover:!bg-secondary`;
+const THEME_KEY = 'repro.theme2';
+const LANG_KEY = 'rs-lang';
+const ARROW = '\u2197\uFE0E';
 const ext = { target: '_blank', rel: 'noopener noreferrer' } as const;
+const text2 = 'text-[color:var(--text2)]';
 
-function readStored<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
-  const value = localStorage.getItem(key);
-  return allowed.includes(value as T) ? (value as T) : fallback;
+interface FeedItem {
+  title?: string;
+  videos?: { en?: string };
 }
 
-function host(url: string) {
-  return new URL(url).host;
+interface Feed {
+  status: 'loading' | 'ok' | 'error';
+  count: number;
+  video?: string;
+  title?: string;
 }
 
-function SectionHead({ k, title, line }: { k: string; title: string; line?: string }) {
+function useExplainerFeed(): Feed {
+  const [feed, setFeed] = useState<Feed>({ status: 'loading', count: 0 });
+  useEffect(() => {
+    const ctrl = new AbortController();
+    fetch(EXPLAINER_FEED, { signal: ctrl.signal })
+      .then((r) => {
+        if (!r.ok) throw new Error(String(r.status));
+        return r.json() as Promise<FeedItem[]>;
+      })
+      .then((list) => {
+        if (!Array.isArray(list)) throw new Error('bad feed');
+        const first = list[0];
+        setFeed({ status: 'ok', count: list.length, video: first?.videos?.en, title: first?.title });
+      })
+      .catch((e: unknown) => {
+        if ((e as Error).name !== 'AbortError') setFeed({ status: 'error', count: 0 });
+      });
+    return () => ctrl.abort();
+  }, []);
+  return feed;
+}
+
+function Ext({ t }: { t: Copy }) {
   return (
-    <div className="max-w-2xl">
-      <p className={kicker}>{k}</p>
-      <h2 className={`${serif} mt-3 text-[1.75rem] font-semibold leading-tight sm:text-[2.25rem]`}>{title}</h2>
-      {line && <p className="mt-3 text-muted-foreground">{line}</p>}
-    </div>
+    <>
+      <span aria-hidden className="text-[0.85em]">
+        {ARROW}
+      </span>
+      <span className="sr-only">{t.newTab}</span>
+    </>
   );
 }
 
-function Header({
-  t,
-  lang,
-  setLang,
-  theme,
-  setTheme,
-}: {
+function Shot({ src, alt }: { src: string; alt: string }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      width={1440}
+      height={900}
+      decoding="async"
+      className="block aspect-[16/10] w-full rounded-xl border border-[color:var(--line)] bg-[var(--soft)] object-cover object-top"
+    />
+  );
+}
+
+function Logo() {
+  return (
+    <span
+      aria-hidden
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#1d1d1f] text-[17px] font-extrabold text-white dark:bg-white dark:text-[#1d1d1f]"
+    >
+      R
+    </span>
+  );
+}
+
+interface ControlsProps {
   t: Copy;
   lang: Lang;
   setLang: (l: Lang) => void;
   theme: Theme;
   setTheme: (t: Theme) => void;
-}) {
-  const links = [
-    ['#tools', t.nav.tools],
-    ['#how', t.nav.how],
-    ['#example', t.nav.example],
-  ] as const;
+}
+
+function Controls({ t, lang, setLang, theme, setTheme }: ControlsProps) {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/90 backdrop-blur-sm">
-      <div className={`${wrap} flex h-16 items-center justify-between gap-3`}>
-        <a href="#top" className={`${serif} rounded text-xl font-semibold tracking-tight ${focusRing}`}>
-          Repro Suite
-        </a>
-        <div className="flex items-center gap-2">
-          <nav className="mr-2 hidden items-center gap-1 md:flex">
-            {links.map(([href, label]) => (
-              <a
-                key={href}
-                href={href}
-                className={`inline-flex h-10 items-center rounded-lg px-3 text-sm font-medium text-muted-foreground hover:text-foreground ${focusRing}`}
-              >
-                {label}
-              </a>
-            ))}
-          </nav>
-          <div role="group" aria-label={t.langLabel} className="flex h-10 items-center rounded-lg border border-border p-1">
-            {(['en', 'zh'] as const).map((code) => (
-              <button
-                key={code}
-                type="button"
-                onClick={() => setLang(code)}
-                aria-pressed={lang === code}
-                className={`h-8 rounded-md px-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                  lang === code ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {code === 'en' ? 'EN' : '中文'}
-              </button>
-            ))}
-          </div>
+    <div className="flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        aria-label={theme === 'dark' ? t.themeToLight : t.themeToDark}
+        className="rs-focus inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--line)] bg-[var(--card)] text-lg leading-none text-[color:var(--text)] hover:bg-[var(--soft)]"
+      >
+        {theme === 'dark' ? '\u2600\uFE0E' : '\u263E\uFE0E'}
+      </button>
+      <div
+        role="group"
+        aria-label={t.langLabel}
+        className="flex h-10 items-center rounded-full border border-[color:var(--line)] bg-[var(--card)] p-1"
+      >
+        {(['en', 'zh'] as const).map((code) => (
           <button
+            key={code}
             type="button"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            aria-label={theme === 'dark' ? t.themeToLight : t.themeToDark}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            onClick={() => setLang(code)}
+            aria-pressed={lang === code}
+            className={`rs-focus h-8 rounded-full px-3 text-sm font-semibold transition-colors ${
+              lang === code ? 'bg-[var(--tint)] text-[color:var(--accent)]' : `${text2} hover:text-[color:var(--text)]`
+            }`}
           >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {code === 'en' ? 'EN' : '中文'}
           </button>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function Hero({ t }: { t: Copy }) {
-  return (
-    <section className={`${wrap} grid items-center gap-12 pb-16 pt-14 lg:grid-cols-12 lg:gap-12 lg:pb-24 lg:pt-20`}>
-      <div className="min-w-0 lg:col-span-5">
-        <p className={kicker}>{t.heroKicker}</p>
-        <h1 className={`${serif} mt-5 break-words text-[clamp(2.25rem,5.4vw,3.75rem)] font-semibold leading-[1.08] tracking-[-0.01em]`}>
-          {t.heroTitle}
-        </h1>
-        <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">{t.heroLine}</p>
-        <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-          <a href="#tools" className={btnPrimary}>
-            {t.explore}
-          </a>
-          <a href={DEMO_URL} {...ext} className={btnSecondary}>
-            {t.demo}
-            <ArrowUpRight className="h-4 w-4" aria-hidden />
-            <span className="sr-only">{t.opensNewTab}</span>
-          </a>
-        </div>
-        <p className="mt-6 text-sm text-[hsl(var(--subtle))]">{t.credit}</p>
-      </div>
-
-      <div className="relative min-w-0 pb-[20%] lg:col-span-7 lg:pb-[16%]">
-        <BrowserFrame
-          eager
-          src={SHOTS.paperrepro}
-          alt={`${t.shotAlt} Paper Repro Agent`}
-          host={host(TOOLS[0].url)}
-          className="ml-auto w-[90%]"
-        />
-        <BrowserFrame
-          compact
-          src={SHOTS.reprolite}
-          alt={`${t.shotAlt} Repro Lite`}
-          host={host(TOOLS[1].url)}
-          className="absolute left-0 top-[34%] w-[36%]"
-        />
-        <BrowserFrame
-          compact
-          src={SHOTS.indexboard}
-          alt={`${t.shotAlt} IndexBoard`}
-          host={host(TOOLS[3].url)}
-          className="absolute bottom-0 right-[6%] w-[46%]"
-        />
-      </div>
-    </section>
-  );
-}
-
-function Stats({ t, lang }: { t: Copy; lang: Lang }) {
-  return (
-    <section aria-label={t.statsLabel} className="border-y border-border bg-card">
-      <dl className={`${wrap} grid grid-cols-2 gap-x-6 gap-y-8 py-10 sm:grid-cols-3 lg:grid-cols-5`}>
-        {STATS.map((s) => (
-          <div key={s.value} className="min-w-0 border-l border-border pl-4">
-            <dt className="sr-only">{s.label[lang]}</dt>
-            <dd className={`${serif} text-[2rem] font-semibold leading-none text-primary sm:text-[2.5rem]`}>{s.value}</dd>
-            <dd className="mt-2 text-sm leading-snug text-muted-foreground">{s.label[lang]}</dd>
-          </div>
         ))}
-      </dl>
-    </section>
-  );
-}
-
-function Tools({ t, lang }: { t: Copy; lang: Lang }) {
-  return (
-    <section id="tools" className="scroll-mt-16 bg-secondary/50">
-      <div className={`${wrap} py-16 lg:py-24`}>
-        <SectionHead k={t.toolsKicker} title={t.toolsTitle} line={t.toolsLine} />
-        <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {TOOLS.map((tool, i) => (
-            <li
-              key={tool.id}
-              className="flex min-w-0 flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-primary hover:shadow-[0_8px_24px_-12px_rgba(20,32,46,0.18)]"
-            >
-              <a href={tool.url} {...ext} tabIndex={-1} aria-hidden className="block border-b border-border bg-secondary">
-                <img
-                  src={tool.shot}
-                  alt=""
-                  width={1440}
-                  height={900}
-                  loading="eager"
-                  decoding="async"
-                  className="block aspect-[16/10] w-full object-cover object-top"
-                />
-              </a>
-              <div className="flex flex-1 flex-col p-6">
-                <span className="font-mono text-xs text-[hsl(var(--subtle))]">{String(i + 1).padStart(2, '0')}</span>
-                <h3 className={`${serif} mt-2 text-xl font-semibold`}>{tool.name[lang]}</h3>
-                <p className="mt-2 leading-relaxed text-muted-foreground">{tool.line[lang]}</p>
-                <div className="mt-5 border-t border-border pt-4">
-                  <p className={caption}>{t.forLabel}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-foreground">{tool.audience[lang]}</p>
-                </div>
-                <div className="mt-auto pt-6">
-                  <a
-                    href={tool.url}
-                    {...ext}
-                    className={`${btnPrimary} w-full`}
-                    aria-label={`${t.open} ${tool.name[lang]} ${t.opensNewTab}`}
-                  >
-                    {t.open}
-                    <ArrowUpRight className="h-4 w-4" aria-hidden />
-                  </a>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-function How({ t, lang }: { t: Copy; lang: Lang }) {
-  return (
-    <section id="how" className="scroll-mt-16">
-      <div className={`${wrap} py-16 lg:py-24`}>
-        <SectionHead k={t.howKicker} title={t.howTitle} line={t.howLine} />
-        <ol className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-5 lg:gap-6">
-          {STEPS.map((step, i) => {
-            const Icon = STEP_ICONS[step.icon];
-            return (
-              <li key={step.icon} className="min-w-0 border-t border-border pt-6">
-                <div className="flex items-center justify-between">
-                  <span className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-border text-primary">
-                    <Icon className="h-5 w-5" strokeWidth={1.5} aria-hidden />
-                  </span>
-                  <span className="font-mono text-xs text-[hsl(var(--subtle))]">{String(i + 1).padStart(2, '0')}</span>
-                </div>
-                <h3 className={`${serif} mt-5 text-lg font-semibold leading-snug`}>{step.title[lang]}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.text[lang]}</p>
-              </li>
-            );
-          })}
-        </ol>
-      </div>
-    </section>
-  );
-}
-
-function BandChart({ t }: { t: Copy }) {
-  const { reported, reproduced, tolerance, axisMin, axisMax } = EXAMPLE;
-  const pct = (v: number) => `${((v - axisMin) / (axisMax - axisMin)) * 100}%`;
-  const ticks = [0.8, 0.82, 0.85, 0.88, 0.9];
-  return (
-    <div className="mt-8" aria-hidden>
-      <div className="relative mx-2 h-12">
-        <div className="absolute inset-x-0 top-1/2 h-px bg-border" />
-        <div
-          className="absolute top-1/2 h-6 -translate-y-1/2 rounded bg-accent ring-1 ring-primary/30"
-          style={{ left: pct(reported - tolerance), width: pct(axisMin + 2 * tolerance) }}
-        />
-        <div className="absolute top-1 h-10 w-px bg-foreground/60" style={{ left: pct(reported) }} />
-        <div
-          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-card bg-primary"
-          style={{ left: pct(reproduced) }}
-        />
-      </div>
-      <div className="relative mx-2 mt-1 h-4 font-mono text-[11px] text-[hsl(var(--subtle))]">
-        {ticks.map((v) => (
-          <span key={v} className="absolute -translate-x-1/2" style={{ left: pct(v) }}>
-            {v.toFixed(2)}
-          </span>
-        ))}
-      </div>
-      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
-        <span className="inline-flex items-center gap-2">
-          <span className="h-3 w-px bg-foreground/60" />
-          {t.exAxisReported} {reported.toFixed(2)}
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <span className="h-2.5 w-2.5 rounded-full bg-primary" />
-          {t.exAxisReproduced} {reproduced.toFixed(3)}
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <span className="h-2.5 w-4 rounded-sm bg-accent ring-1 ring-primary/30" />
-          {t.exBand} ±{tolerance}
-        </span>
       </div>
     </div>
   );
 }
 
-function Example({ t }: { t: Copy }) {
-  const rows: [string, string][] = [
-    [t.exInput, t.exInputValue],
-    [t.exReported, EXAMPLE.reported.toFixed(2)],
-    [t.exReproduced, EXAMPLE.reproduced.toFixed(3)],
-    [t.exBand, t.exBandValue],
-    [t.exTime, t.exTimeValue],
-    [t.exCost, t.exCostValue],
-  ];
+function SidebarBody(props: ControlsProps & { onNavigate?: () => void }) {
+  const { t, lang, onNavigate } = props;
   return (
-    <section id="example" className="scroll-mt-16 border-t border-border bg-secondary/50">
-      <div className={`${wrap} grid items-center gap-10 py-16 lg:grid-cols-12 lg:py-24`}>
-        <div className="min-w-0 lg:col-span-6">
-          <p className={kicker}>{t.exKicker}</p>
-          <article className="mt-5 rounded-xl border border-border bg-card p-6 sm:p-8">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <h2 className={`${serif} text-2xl font-semibold leading-snug sm:text-[1.75rem]`}>{t.exTitle}</h2>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground">
-                <CheckCircle2 className="h-4 w-4" aria-hidden />
-                {t.exVerdict}
-              </span>
-            </div>
-            <dl className="mt-6 grid grid-cols-1 gap-x-6 border-t border-border sm:grid-cols-2">
-              {rows.map(([k, v]) => (
-                <div key={k} className="flex items-baseline justify-between gap-4 border-b border-border py-3">
-                  <dt className="text-sm text-muted-foreground">{k}</dt>
-                  <dd className="text-right font-medium">{v}</dd>
-                </div>
+    <div className="flex h-full flex-col">
+      <a href="#top" onClick={onNavigate} className="rs-focus flex items-start gap-3 rounded-xl">
+        <Logo />
+        <span className="min-w-0">
+          <span className="block text-[15px] font-extrabold tracking-[-0.02em]">Repro Suite</span>
+          <span className={`block text-[13px] leading-snug ${text2}`}>{t.tagline}</span>
+        </span>
+      </a>
+      <nav className="mt-8 flex-1 space-y-7 overflow-y-auto">
+        {NAV_GROUPS.map((g) => (
+          <div key={g.title.en}>
+            <p className={`px-3 text-[11px] font-semibold uppercase tracking-[0.08em] ${text2}`}>{g.title[lang]}</p>
+            <ul className="mt-2 space-y-0.5">
+              {g.links.map((l) => (
+                <li key={l.name}>
+                  <a
+                    href={l.url}
+                    {...ext}
+                    onClick={onNavigate}
+                    className="rs-focus flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-[14px] font-medium text-[color:var(--text)] hover:bg-[var(--soft)]"
+                  >
+                    <span className="truncate">{l.name}</span>
+                    <span className={text2}>
+                      <Ext t={t} />
+                    </span>
+                  </a>
+                </li>
               ))}
-            </dl>
-            <BandChart t={t} />
-            <a
-              href={RECORDED_RUN_URL}
-              {...ext}
-              className={`mt-8 inline-flex items-center gap-1.5 rounded font-medium text-primary hover:underline ${focusRing}`}
-            >
-              {t.exLink}
-              <ArrowRight className="h-4 w-4" aria-hidden />
-              <span className="sr-only">{t.opensNewTab}</span>
-            </a>
-          </article>
-        </div>
-        <div className="min-w-0 lg:col-span-6">
-          <BrowserFrame src={SHOTS.benchmark} alt={t.exShotCaption} host={host(DEMO_URL)} />
-          <p className="mt-3 text-sm text-[hsl(var(--subtle))]">{t.exShotCaption}</p>
-        </div>
+            </ul>
+          </div>
+        ))}
+      </nav>
+      <div className="mt-6 border-t border-[color:var(--line)] pt-5">
+        <Controls {...props} />
       </div>
+    </div>
+  );
+}
+
+function Section({ id, title, sub, children }: { id?: string; title: string; sub?: string; children: ReactNode }) {
+  return (
+    <section id={id} className="scroll-mt-20 pt-20 sm:pt-28">
+      <h2 className="rs-h text-[1.75rem] leading-tight sm:text-[2.25rem]">{title}</h2>
+      {sub && <p className={`mt-3 max-w-xl text-[17px] leading-relaxed ${text2}`}>{sub}</p>}
+      <div className="mt-10">{children}</div>
     </section>
   );
 }
 
-function Safety({ t, lang }: { t: Copy; lang: Lang }) {
+function Tag({ label, name }: { label: string; name: string }) {
   return (
-    <section className="border-t border-border">
-      <div className={`${wrap} py-16 lg:py-24`}>
-        <SectionHead k={t.safeKicker} title={t.safeTitle} line={t.safeLine} />
-        <ul className="mt-12 grid gap-6 md:grid-cols-3">
-          {SAFETY.map((item) => {
-            const Icon = SAFETY_ICONS[item.icon];
-            return (
-              <li key={item.icon} className="min-w-0 rounded-xl border border-border bg-card p-6">
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-accent text-accent-foreground">
-                  <Icon className="h-5 w-5" strokeWidth={1.5} aria-hidden />
-                </span>
-                <h3 className={`${serif} mt-5 text-lg font-semibold`}>{item.title[lang]}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.text[lang]}</p>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </section>
+    <p className="text-[13px] font-semibold">
+      <span className="text-[color:var(--accent)]">{label}</span>
+      <span className={`mx-1.5 ${text2}`}>·</span>
+      <span className="text-[color:var(--text)]">{name}</span>
+    </p>
   );
 }
 
-function Footer({ t, lang }: { t: Copy; lang: Lang }) {
+function ExplainerCard({ t, feed }: { t: Copy; feed: Feed }) {
   return (
-    <footer className="border-t border-border bg-card">
-      <div className={`${wrap} grid gap-10 py-12 md:grid-cols-12`}>
-        <div className="min-w-0 md:col-span-6">
-          <p className={`${serif} text-xl font-semibold`}>Repro Suite</p>
-          <p className="mt-3 text-sm text-foreground">{t.footTeam}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{t.footPartners}</p>
-          <p className="mt-1 text-sm text-muted-foreground">{t.footBuilt}</p>
+    <article className="rs-card flex min-w-0 flex-col p-5 sm:p-6">
+      {feed.status === 'ok' && feed.video ? (
+        <video
+          controls
+          preload="metadata"
+          playsInline
+          src={`${feed.video}#t=2`}
+          aria-label={t.videoLabel(feed.title ?? 'Paper Explainer')}
+          className="block aspect-[16/10] w-full rounded-xl border border-[color:var(--line)] bg-black object-contain"
+        />
+      ) : (
+        <Shot src={SHOTS.explainer} alt={t.shotAlt('Paper Explainer')} />
+      )}
+      <div className="mt-6 flex flex-1 flex-col">
+        <Tag label={t.learnTag} name="Paper Explainer" />
+        <p className={`mt-3 text-[16px] leading-relaxed ${text2}`}>{t.explainerText}</p>
+        <p className="mt-5 flex items-center gap-2 text-sm" aria-live="polite">
+          {feed.status === 'ok' && (
+            <>
+              <span aria-hidden className="h-2 w-2 rounded-full bg-[var(--accent)]" />
+              {t.videosMade[0] && <span className={text2}>{t.videosMade[0]}</span>}
+              <span className="rs-mono font-semibold text-[color:var(--text)]">{feed.count}</span>
+              <span className={text2}>{t.videosMade[1]}</span>
+            </>
+          )}
+          {feed.status === 'loading' && <span className={text2}>{t.videosLoading}</span>}
+          {feed.status === 'error' && <span className={text2}>{t.videosError}</span>}
+        </p>
+        <div className="mt-auto pt-7">
+          <a href={URLS.explainer} {...ext} className="rs-btn rs-btn-primary">
+            {t.makeVideo}
+            <Ext t={t} />
+          </a>
         </div>
-        <nav aria-label={t.footTools} className="min-w-0 md:col-span-6">
-          <p className={caption}>{t.footTools}</p>
-          <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-            {TOOLS.map((tool) => (
-              <li key={tool.id}>
+      </div>
+    </article>
+  );
+}
+
+function ReproCard({ t, lang }: { t: Copy; lang: Lang }) {
+  return (
+    <article className="rs-card flex min-w-0 flex-col p-5 sm:p-6">
+      <Shot src={SHOTS.repro} alt={t.shotAlt('Paper Repro Agent')} />
+      <div className="mt-6 flex flex-1 flex-col">
+        <Tag label={t.checkTag} name="Paper Repro Agent" />
+        <p className={`mt-3 text-[16px] leading-relaxed ${text2}`}>{t.reproText}</p>
+        <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {REPRO_FACTS.map((f) => (
+            <div key={f.label.en} className="min-w-0 rounded-xl bg-[var(--soft)] px-3 py-2.5">
+              <dt className="sr-only">{f.label[lang]}</dt>
+              <dd className="rs-mono text-[18px] font-semibold text-[color:var(--text)]">{f.value}</dd>
+              <dd className={`mt-0.5 text-[12px] leading-tight ${text2}`}>{f.label[lang]}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="mt-auto pt-7">
+          <a href={URLS.repro} {...ext} className="rs-btn rs-btn-primary">
+            {t.watchRepro}
+            <Ext t={t} />
+          </a>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function FlowDiagram({ t, lang }: { t: Copy; lang: Lang }) {
+  return (
+    <ol className="rs-card flex flex-col px-6 py-8 sm:px-8 md:flex-row md:items-start md:py-10">
+      {FLOW.map((step, i) => {
+        const body = (
+          <>
+            <span className="rs-mono inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[color:var(--accent)] bg-[var(--tint)] text-sm font-semibold text-[color:var(--accent)]">
+              {i + 1}
+            </span>
+            <span className="min-w-0 md:mt-4 md:block">
+              <span className="block text-[16px] font-bold text-[color:var(--text)]">
+                {step.name[lang]}
+                {step.url && (
+                  <span className={`ml-1 ${text2}`}>
+                    <Ext t={t} />
+                  </span>
+                )}
+              </span>
+              <span className={`block text-[14px] ${text2}`}>{step.role[lang]}</span>
+            </span>
+          </>
+        );
+        const cls = 'flex items-center gap-4 md:flex-col md:items-center md:gap-0 md:text-center';
+        return (
+          <li key={step.name.en} className="flex min-w-0 flex-col md:flex-1 md:flex-row md:items-start">
+            {step.url ? (
+              <a href={step.url} {...ext} className={`rs-focus rounded-xl ${cls} md:flex-1`}>
+                {body}
+              </a>
+            ) : (
+              <div className={`${cls} md:flex-1`}>{body}</div>
+            )}
+            {i < FLOW.length - 1 && (
+              <span
+                aria-hidden
+                className="ml-5 h-7 w-px bg-[var(--line)] md:ml-0 md:mt-5 md:h-px md:w-8 md:shrink-0 lg:w-12"
+              />
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+function Supporting({ t, lang }: { t: Copy; lang: Lang }) {
+  return (
+    <ul className="grid gap-5 sm:grid-cols-2 min-[1180px]:grid-cols-4">
+      {SUPPORTING.map((s) => (
+        <li key={s.name} className="rs-card flex min-w-0 flex-col p-4">
+          <Shot src={s.shot} alt={t.shotAlt(s.name)} />
+          <h3 className="rs-h mt-4 text-[17px]">{s.name}</h3>
+          <p className={`mt-1.5 flex-1 text-[14px] leading-relaxed ${text2}`}>{s.line[lang]}</p>
+          <a
+            href={s.url}
+            {...ext}
+            className="rs-focus mt-4 inline-flex w-fit items-center gap-1 rounded text-[14px] font-semibold text-[color:var(--accent)] hover:underline"
+          >
+            {t.open}
+            <Ext t={t} />
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Footer({ t }: { t: Copy }) {
+  const all = NAV_GROUPS.flatMap((g) => g.links);
+  return (
+    <footer className="mt-24 border-t border-[color:var(--line)] py-12 sm:mt-32">
+      <div className="grid gap-10 md:grid-cols-2">
+        <div className="flex items-start gap-3">
+          <Logo />
+          <div className="min-w-0 text-sm">
+            <p className="font-extrabold tracking-[-0.02em]">Repro Suite</p>
+            <p className="mt-2 text-[color:var(--text)]">{t.footTeam}</p>
+            <p className={`mt-1 ${text2}`}>{t.footPartners}</p>
+          </div>
+        </div>
+        <nav aria-label={t.footApps}>
+          <p className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${text2}`}>{t.footApps}</p>
+          <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2">
+            {all.map((l) => (
+              <li key={l.name}>
                 <a
-                  href={tool.url}
+                  href={l.url}
                   {...ext}
-                  className={`inline-flex items-center gap-1 rounded py-1 text-sm text-foreground hover:text-primary ${focusRing}`}
+                  className="rs-focus inline-flex items-center gap-1 rounded py-1 text-sm text-[color:var(--text)] hover:text-[color:var(--accent)]"
                 >
-                  {tool.name[lang]}
-                  <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-                  <span className="sr-only">{t.opensNewTab}</span>
+                  {l.name}
+                  <Ext t={t} />
                 </a>
               </li>
             ))}
           </ul>
         </nav>
       </div>
-      <div className={`${wrap} border-t border-border py-5 text-xs text-[hsl(var(--subtle))]`}>
-        © {new Date().getFullYear()} Repro Suite
-      </div>
     </footer>
   );
 }
 
+function readStored<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
+  const v = localStorage.getItem(key);
+  return allowed.includes(v as T) ? (v as T) : fallback;
+}
+
 export default function Index() {
-  const [lang, setLang] = useState<Lang>(() => readStored('rs-lang', ['en', 'zh'], 'en'));
-  const [theme, setTheme] = useState<Theme>(() =>
-    readStored('rs-theme', ['light', 'dark'], window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
-  );
+  const [lang, setLang] = useState<Lang>(() => readStored(LANG_KEY, ['en', 'zh'], 'en'));
+  const [theme, setTheme] = useState<Theme>(() => readStored(THEME_KEY, ['light', 'dark'], 'light'));
+  const [drawer, setDrawer] = useState(false);
+  const feed = useExplainerFeed();
   const t = COPY[lang];
+  const controls: ControlsProps = { t, lang, setLang, theme, setTheme };
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem('rs-theme', theme);
+    localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
 
   useEffect(() => {
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
-    localStorage.setItem('rs-lang', lang);
+    localStorage.setItem(LANG_KEY, lang);
   }, [lang]);
 
+  useEffect(() => {
+    if (!drawer) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setDrawer(false);
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [drawer]);
+
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
-      <Header t={t} lang={lang} setLang={setLang} theme={theme} setTheme={setTheme} />
-      <main id="top">
-        <Hero t={t} />
-        <Stats t={t} lang={lang} />
-        <Tools t={t} lang={lang} />
-        <How t={t} lang={lang} />
-        <Example t={t} />
-        <Safety t={t} lang={lang} />
-      </main>
-      <Footer t={t} lang={lang} />
+    <div className="flex min-h-screen w-full overflow-x-hidden">
+      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 border-r border-[color:var(--line)] bg-[var(--bg)] px-4 py-6 min-[900px]:block">
+        <SidebarBody {...controls} />
+      </aside>
+
+      {drawer && (
+        <div className="fixed inset-0 z-50 min-[900px]:hidden" role="dialog" aria-modal="true" aria-label="Repro Suite">
+          <button
+            type="button"
+            aria-label={t.close}
+            onClick={() => setDrawer(false)}
+            className="absolute inset-0 bg-[var(--scrim)]"
+          />
+          <div className="absolute inset-y-0 left-0 w-[280px] max-w-[85vw] border-r border-[color:var(--line)] bg-[var(--bg)] px-4 py-6 shadow-[var(--shadow)]">
+            <button
+              type="button"
+              onClick={() => setDrawer(false)}
+              aria-label={t.close}
+              className={`rs-focus absolute right-3 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full text-xl ${text2} hover:bg-[var(--soft)]`}
+            >
+              {'\u00D7'}
+            </button>
+            <SidebarBody {...controls} onNavigate={() => setDrawer(false)} />
+          </div>
+        </div>
+      )}
+
+      <div className="min-w-0 flex-1">
+        <header className="rs-topbar sticky top-0 z-40 flex h-14 items-center justify-between border-b border-[color:var(--line)] px-4 min-[900px]:hidden">
+          <a href="#top" className="rs-focus flex items-center gap-2.5 rounded-lg">
+            <Logo />
+            <span className="text-[15px] font-extrabold tracking-[-0.02em]">Repro Suite</span>
+          </a>
+          <button
+            type="button"
+            onClick={() => setDrawer(true)}
+            aria-label={t.menu}
+            aria-expanded={drawer}
+            className="rs-focus inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--line)] text-lg text-[color:var(--text)]"
+          >
+            {'\u2630'}
+          </button>
+        </header>
+
+        <main id="top" className="mx-auto w-full max-w-[1080px] px-5 sm:px-8 lg:px-12">
+          <section className="pt-14 sm:pt-24">
+            <p className="text-[14px] font-semibold text-[color:var(--accent)]">{t.eyebrow}</p>
+            <h1 className="rs-h mt-4 max-w-3xl text-[clamp(2.4rem,7vw,4.5rem)] leading-[1.02]">{t.heroTitle}</h1>
+            <p className={`mt-6 max-w-2xl text-[18px] leading-relaxed sm:text-[20px] ${text2}`}>{t.heroSub}</p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <a href={URLS.explainer} {...ext} className="rs-btn rs-btn-primary">
+                {t.explain}
+                <Ext t={t} />
+              </a>
+              <a href={URLS.repro} {...ext} className="rs-btn rs-btn-secondary">
+                {t.check}
+                <Ext t={t} />
+              </a>
+            </div>
+          </section>
+
+          <section className="mt-16 grid gap-6 sm:mt-20 md:grid-cols-2">
+            <ExplainerCard t={t} feed={feed} />
+            <ReproCard t={t} lang={lang} />
+          </section>
+
+          <Section id="fit" title={t.fitTitle} sub={t.fitSub}>
+            <FlowDiagram t={t} lang={lang} />
+          </Section>
+
+          <Section id="supporting" title={t.supportTitle} sub={t.supportSub}>
+            <Supporting t={t} lang={lang} />
+          </Section>
+
+          <Footer t={t} />
+        </main>
+      </div>
     </div>
   );
 }
