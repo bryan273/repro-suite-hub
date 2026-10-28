@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import SuiteTopBar from '@/components/SuiteTopBar';
 import {
   COPY,
   EXPLAINER_FEED,
@@ -97,85 +98,76 @@ function Logo() {
   );
 }
 
-interface ControlsProps {
-  t: Copy;
-  lang: Lang;
-  setLang: (l: Lang) => void;
-  theme: Theme;
-  setTheme: (t: Theme) => void;
-}
-
-function Controls({ t, lang, setLang, theme, setTheme }: ControlsProps) {
+function HeroStack({ lang }: { lang: Lang }) {
+  const host = useRef<HTMLDivElement>(null);
+  const stack = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const h = host.current;
+    const s = stack.current;
+    if (!h || !s || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const move = (e: PointerEvent) => {
+      const r = h.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      s.style.setProperty('--ry', `${(22 + x * 22).toFixed(1)}deg`);
+      s.style.setProperty('--rx', `${(10 - y * 16).toFixed(1)}deg`);
+    };
+    const leave = () => {
+      s.style.removeProperty('--ry');
+      s.style.removeProperty('--rx');
+    };
+    h.addEventListener('pointermove', move);
+    h.addEventListener('pointerleave', leave);
+    return () => {
+      h.removeEventListener('pointermove', move);
+      h.removeEventListener('pointerleave', leave);
+    };
+  }, []);
+  const zh = lang === 'zh';
   return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        aria-label={theme === 'dark' ? t.themeToLight : t.themeToDark}
-        className="rs-focus inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--line)] bg-[var(--card)] text-lg leading-none text-[color:var(--text)] hover:bg-[var(--soft)]"
-      >
-        {theme === 'dark' ? '\u2600\uFE0E' : '\u263E\uFE0E'}
-      </button>
-      <div
-        role="group"
-        aria-label={t.langLabel}
-        className="flex h-10 items-center rounded-full border border-[color:var(--line)] bg-[var(--card)] p-1"
-      >
-        {(['en', 'zh'] as const).map((code) => (
-          <button
-            key={code}
-            type="button"
-            onClick={() => setLang(code)}
-            aria-pressed={lang === code}
-            className={`rs-focus h-8 rounded-full px-3 text-sm font-semibold transition-colors ${
-              lang === code ? 'bg-[var(--tint)] text-[color:var(--accent)]' : `${text2} hover:text-[color:var(--text)]`
-            }`}
-          >
-            {code === 'en' ? 'EN' : '中文'}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function SidebarBody(props: ControlsProps & { onNavigate?: () => void }) {
-  const { t, lang, onNavigate } = props;
-  return (
-    <div className="flex h-full flex-col">
-      <a href="#top" onClick={onNavigate} className="rs-focus flex items-start gap-3 rounded-xl">
-        <Logo />
-        <span className="min-w-0">
-          <span className="block text-[15px] font-extrabold tracking-[-0.02em]">Repro Suite</span>
-          <span className={`block text-[13px] leading-snug ${text2}`}>{t.tagline}</span>
-        </span>
-      </a>
-      <nav className="mt-8 flex-1 space-y-7 overflow-y-auto">
-        {NAV_GROUPS.map((g) => (
-          <div key={g.title.en}>
-            <p className={`px-3 text-[11px] font-semibold uppercase tracking-[0.08em] ${text2}`}>{g.title[lang]}</p>
-            <ul className="mt-2 space-y-0.5">
-              {g.links.map((l) => (
-                <li key={l.name}>
-                  <a
-                    href={l.url}
-                    {...ext}
-                    onClick={onNavigate}
-                    className="rs-focus flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-[14px] font-medium text-[color:var(--text)] hover:bg-[var(--soft)]"
-                  >
-                    <span className="truncate">{l.name}</span>
-                    <span className={text2}>
-                      <Ext t={t} />
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
+    <div ref={host} className="rs-stage" aria-hidden>
+      <div className="rs-glow" />
+      <div ref={stack} className="rs-stack">
+        <div className="rs-sheet rs-s1">
+          <span className="tag">1 · {zh ? '学习' : 'Learn'}</span>
+          <div className="rs-vid">
+            <i>&#9654;</i>
+            <span />
           </div>
-        ))}
-      </nav>
-      <div className="mt-6 border-t border-[color:var(--line)] pt-5">
-        <Controls {...props} />
+          <small className={text2}>{zh ? '40 秒讲解视频' : '40 second explainer'}</small>
+        </div>
+        <div className="rs-sheet rs-s2">
+          <span className="tag">2 · {zh ? '核验' : 'Check'}</span>
+          <div className="rs-big">0.849</div>
+          <small className={text2}>{zh ? '论文报告 0.85' : 'reported 0.85'}</small>
+          <span className="rs-ok">{zh ? '✓ 已复现' : '✓ Reproduced'}</span>
+          <div className="rs-band">
+            <i />
+            <b />
+          </div>
+        </div>
+        <div className="rs-sheet rs-s3">
+          <span className="tag">3 · {zh ? '对比' : 'Compare'}</span>
+          <div className="rs-bars">
+            <div>
+              DeepSeek-V4.1 · 89.2
+              <i style={{ width: '92%' }} />
+            </div>
+            <div>
+              Kimi-K3 · 86.6
+              <i style={{ width: '88%' }} />
+            </div>
+            <div>
+              GLM-5.3 · 85.6
+              <i style={{ width: '86%' }} />
+            </div>
+            <div>
+              Qwen3.8 · 84.1
+              <i style={{ width: '84%' }} />
+            </div>
+          </div>
+          <small className={text2}>{zh ? '5 个模型统计上打平' : '5 of 6 models tied'}</small>
+        </div>
       </div>
     </div>
   );
@@ -381,10 +373,8 @@ function readStored<T extends string>(key: string, allowed: readonly T[], fallba
 export default function Index() {
   const [lang, setLang] = useState<Lang>(() => readStored(LANG_KEY, ['en', 'zh'], 'en'));
   const [theme, setTheme] = useState<Theme>(() => readStored(THEME_KEY, ['light', 'dark'], 'light'));
-  const [drawer, setDrawer] = useState(false);
   const feed = useExplainerFeed();
   const t = COPY[lang];
-  const controls: ControlsProps = { t, lang, setLang, theme, setTheme };
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -396,67 +386,32 @@ export default function Index() {
     localStorage.setItem(LANG_KEY, lang);
   }, [lang]);
 
-  useEffect(() => {
-    if (!drawer) return;
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setDrawer(false);
-    document.addEventListener('keydown', onKey);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = '';
-    };
-  }, [drawer]);
+  const nav = [
+    { label: lang === 'zh' ? '概览' : 'Overview', href: '#top' },
+    { label: t.fitTitle, href: '#fit' },
+    { label: t.supportTitle, href: '#supporting' },
+  ];
 
   return (
-    <div className="flex min-h-screen w-full overflow-x-hidden">
-      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 border-r border-[color:var(--line)] bg-[var(--bg)] px-4 py-6 min-[900px]:block">
-        <SidebarBody {...controls} />
-      </aside>
+    <div className="min-h-screen w-full overflow-x-hidden">
+      <SuiteTopBar
+        appId="hub"
+        brand="Repro Suite"
+        letter="R"
+        homeTo="/"
+        nav={nav}
+        dark={theme === 'dark'}
+        onToggleDark={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        lang={lang}
+        onLang={setLang}
+      />
 
-      {drawer && (
-        <div className="fixed inset-0 z-50 min-[900px]:hidden" role="dialog" aria-modal="true" aria-label="Repro Suite">
-          <button
-            type="button"
-            aria-label={t.close}
-            onClick={() => setDrawer(false)}
-            className="absolute inset-0 bg-[var(--scrim)]"
-          />
-          <div className="absolute inset-y-0 left-0 w-[280px] max-w-[85vw] border-r border-[color:var(--line)] bg-[var(--bg)] px-4 py-6 shadow-[var(--shadow)]">
-            <button
-              type="button"
-              onClick={() => setDrawer(false)}
-              aria-label={t.close}
-              className={`rs-focus absolute right-3 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full text-xl ${text2} hover:bg-[var(--soft)]`}
-            >
-              {'\u00D7'}
-            </button>
-            <SidebarBody {...controls} onNavigate={() => setDrawer(false)} />
-          </div>
-        </div>
-      )}
-
-      <div className="min-w-0 flex-1">
-        <header className="rs-topbar sticky top-0 z-40 flex h-14 items-center justify-between border-b border-[color:var(--line)] px-4 min-[900px]:hidden">
-          <a href="#top" className="rs-focus flex items-center gap-2.5 rounded-lg">
-            <Logo />
-            <span className="text-[15px] font-extrabold tracking-[-0.02em]">Repro Suite</span>
-          </a>
-          <button
-            type="button"
-            onClick={() => setDrawer(true)}
-            aria-label={t.menu}
-            aria-expanded={drawer}
-            className="rs-focus inline-flex h-10 w-10 items-center justify-center rounded-full border border-[color:var(--line)] text-lg text-[color:var(--text)]"
-          >
-            {'\u2630'}
-          </button>
-        </header>
-
-        <main id="top" className="mx-auto w-full max-w-[1080px] px-5 sm:px-8 lg:px-12">
-          <section className="pt-14 sm:pt-24">
+      <main id="top" className="mx-auto w-full max-w-[1160px] px-5 sm:px-8">
+        <section className="grid items-center gap-4 pt-10 sm:pt-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+          <div>
             <p className="text-[14px] font-semibold text-[color:var(--accent)]">{t.eyebrow}</p>
-            <h1 className="rs-h mt-4 max-w-3xl text-[clamp(2.4rem,7vw,4.5rem)] leading-[1.02]">{t.heroTitle}</h1>
-            <p className={`mt-6 max-w-2xl text-[18px] leading-relaxed sm:text-[20px] ${text2}`}>{t.heroSub}</p>
+            <h1 className="rs-h mt-4 max-w-3xl text-[clamp(2.4rem,6.4vw,4.4rem)] leading-[1.02]">{t.heroTitle}</h1>
+            <p className={`mt-6 max-w-xl text-[18px] leading-relaxed ${text2}`}>{t.heroSub}</p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <a href={URLS.explainer} {...ext} className="rs-btn rs-btn-primary">
                 {t.explain}
@@ -467,24 +422,25 @@ export default function Index() {
                 <Ext t={t} />
               </a>
             </div>
-          </section>
+          </div>
+          <HeroStack lang={lang} />
+        </section>
 
-          <section className="mt-16 grid gap-6 sm:mt-20 md:grid-cols-2">
-            <ExplainerCard t={t} lang={lang} feed={feed} />
-            <ReproCard t={t} lang={lang} />
-          </section>
+        <section className="mt-12 grid gap-6 sm:mt-16 md:grid-cols-2">
+          <ExplainerCard t={t} lang={lang} feed={feed} />
+          <ReproCard t={t} lang={lang} />
+        </section>
 
-          <Section id="fit" title={t.fitTitle} sub={t.fitSub}>
-            <FlowDiagram t={t} lang={lang} />
-          </Section>
+        <Section id="fit" title={t.fitTitle} sub={t.fitSub}>
+          <FlowDiagram t={t} lang={lang} />
+        </Section>
 
-          <Section id="supporting" title={t.supportTitle} sub={t.supportSub}>
-            <Supporting t={t} lang={lang} />
-          </Section>
+        <Section id="supporting" title={t.supportTitle} sub={t.supportSub}>
+          <Supporting t={t} lang={lang} />
+        </Section>
 
-          <Footer t={t} />
-        </main>
-      </div>
+        <Footer t={t} />
+      </main>
     </div>
   );
 }
