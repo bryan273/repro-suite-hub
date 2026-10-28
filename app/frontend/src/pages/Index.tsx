@@ -5,7 +5,6 @@ import {
   EXPLAINER_FEED,
   FLOW,
   NAV_GROUPS,
-  REPRO_FACTS,
   SHOTS,
   SUPPORTING,
   URLS,
@@ -213,18 +212,6 @@ function ExplainerCard({ t, lang, feed }: { t: Copy; lang: Lang; feed: Feed }) {
       <div className="mt-6 flex flex-1 flex-col">
         <Tag label={t.learnTag} name="Paper Explainer" />
         <p className={`mt-3 text-[16px] leading-relaxed ${text2}`}>{t.explainerText}</p>
-        <p className="mt-5 flex items-center gap-2 text-sm" aria-live="polite">
-          {feed.status === 'ok' && (
-            <>
-              <span aria-hidden className="h-2 w-2 rounded-full bg-[var(--accent)]" />
-              {t.videosMade[0] && <span className={text2}>{t.videosMade[0]}</span>}
-              <span className="rs-mono font-semibold text-[color:var(--text)]">{feed.count}</span>
-              <span className={text2}>{t.videosMade[1]}</span>
-            </>
-          )}
-          {feed.status === 'loading' && <span className={text2}>{t.videosLoading}</span>}
-          {feed.status === 'error' && <span className={text2}>{t.videosError}</span>}
-        </p>
         <div className="mt-auto pt-7">
           <a href={URLS.explainer} {...ext} className="rs-btn rs-btn-primary">
             {t.makeVideo}
@@ -243,15 +230,6 @@ function ReproCard({ t, lang }: { t: Copy; lang: Lang }) {
       <div className="mt-6 flex flex-1 flex-col">
         <Tag label={t.checkTag} name="Paper Repro Agent" />
         <p className={`mt-3 text-[16px] leading-relaxed ${text2}`}>{t.reproText}</p>
-        <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {REPRO_FACTS.map((f) => (
-            <div key={f.label.en} className="min-w-0 rounded-xl bg-[var(--soft)] px-3 py-2.5">
-              <dt className="sr-only">{f.label[lang]}</dt>
-              <dd className="rs-mono text-[18px] font-semibold text-[color:var(--text)]">{f.value}</dd>
-              <dd className={`mt-0.5 text-[12px] leading-tight ${text2}`}>{f.label[lang]}</dd>
-            </div>
-          ))}
-        </dl>
         <div className="mt-auto pt-7">
           <a href={URLS.repro} {...ext} className="rs-btn rs-btn-primary">
             {t.watchRepro}
