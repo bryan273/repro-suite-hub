@@ -2,13 +2,13 @@ export type Lang = 'en' | 'zh';
 type L = Record<Lang, string>;
 
 export const URLS = {
-  explainer: 'https://paperexplainer-aiid.pub.atoms.world',
-  repro: 'https://paperrepro-aiid.atoms.world/repro/index.html',
-  reproLite: 'https://reprolite-aiid.pub.atoms.world',
-  reading: 'https://readingcompanion-aiid.pub.atoms.world',
-  indexboard: 'https://indexboard-aiid.pub.atoms.world/b/5dhum9j5h0',
-  reproDesk: 'https://reprodesk-aiid.pub.atoms.world',
-  benchmark: 'https://paperrepro-aiid.atoms.world/repro/bench.html',
+  explainer: 'https://paper-explainer-aiid.vercel.app',
+  repro: 'https://paper-repro-aiid.vercel.app/repro/index.html',
+  reproLite: 'https://repro-lite-aiid.vercel.app',
+  reading: 'https://reading-companion-aiid.vercel.app',
+  indexboard: 'https://indexboard-aiid.vercel.app/b/5dhum9j5h0',
+  reproDesk: 'https://repro-desk-aiid.vercel.app',
+  benchmark: 'https://paper-repro-aiid.vercel.app/repro/bench.html',
 } as const;
 
 export const EXPLAINER_FEED = 'https://vzvyghmtsakixlhzzuol.supabase.co/functions/v1/explainer-render?recent=1';
