@@ -2,24 +2,24 @@ export type Lang = 'en' | 'zh';
 type L = Record<Lang, string>;
 
 export const URLS = {
-  explainer: 'https://paper-explainer-aiid.vercel.app',
-  repro: 'https://paper-repro-aiid.vercel.app/repro/index.html',
-  reproLite: 'https://repro-lite-aiid.vercel.app',
-  reading: 'https://reading-companion-aiid.vercel.app',
-  indexboard: 'https://indexboard-aiid.vercel.app/b/5dhum9j5h0',
-  reproDesk: 'https://repro-desk-aiid.vercel.app',
-  benchmark: 'https://paper-repro-aiid.vercel.app/repro/bench.html',
+  explainer: 'https://bryan273.github.io/repro-suite/explainer',
+  repro: 'https://bryan273.github.io/repro-suite/repro/index.html',
+  reproLite: 'https://bryan273.github.io/repro-suite/lite',
+  reading: 'https://bryan273.github.io/repro-suite/reading',
+  indexboard: 'https://bryan273.github.io/repro-suite/indexboard/b/5dhum9j5h0',
+  reproDesk: 'https://bryan273.github.io/repro-suite/desk',
+  benchmark: 'https://bryan273.github.io/repro-suite/repro/bench.html',
 } as const;
 
 export const EXPLAINER_FEED = 'https://vzvyghmtsakixlhzzuol.supabase.co/functions/v1/explainer-render?recent=1';
 
 export const SHOTS = {
-  explainer: '/shots/paperexplainer.webp',
-  repro: '/shots/paperrepro.webp',
-  reproLite: '/shots/reprolite.webp',
-  reading: '/shots/readingcompanion.webp',
-  indexboard: '/shots/indexboard.webp',
-  reproDesk: '/shots/reprodesk.webp',
+  explainer: import.meta.env.BASE_URL + 'shots/paperexplainer.webp',
+  repro: import.meta.env.BASE_URL + 'shots/paperrepro.webp',
+  reproLite: import.meta.env.BASE_URL + 'shots/reprolite.webp',
+  reading: import.meta.env.BASE_URL + 'shots/readingcompanion.webp',
+  indexboard: import.meta.env.BASE_URL + 'shots/indexboard.webp',
+  reproDesk: import.meta.env.BASE_URL + 'shots/reprodesk.webp',
 } as const;
 
 export interface NavLink {
