@@ -298,7 +298,7 @@ function Supporting({ t, lang }: { t: Copy; lang: Lang }) {
           <a
             href={s.url}
             {...ext}
-            className="rs-focus mt-4 inline-flex w-fit items-center gap-1 rounded text-[14px] font-semibold text-[color:var(--accent)] hover:underline"
+            className="rs-focus mt-3 inline-flex min-h-9 w-fit items-center gap-1 rounded text-[14px] font-semibold text-[color:var(--accent)] hover:underline"
           >
             {t.open}
             <Ext t={t} />

@@ -194,7 +194,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
 .rs-vid span { position: absolute; left: 10px; right: 10px; bottom: 8px; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, 0.2); }
 .rs-vid span::after { content: ""; display: block; width: 38%; height: 100%; border-radius: 2px; background: linear-gradient(90deg, #ff8a5b, #ffc15e); }
 .rs-big { font: 700 44px/1 'Space Grotesk', sans-serif; letter-spacing: -0.04em; margin-top: 6px; }
-.rs-ok { display: inline-flex; align-self: flex-start; font: 600 12px 'Inter', sans-serif; color: #15803d; background: #e6f4ea; padding: 5px 11px; border-radius: 999px; }
+.rs-ok { display: inline-flex; align-self: flex-start; font: 600 12px 'Inter', sans-serif; color: #136f36; background: #e6f4ea; padding: 5px 11px; border-radius: 999px; }
 .dark .rs-ok { color: #4ade80; background: #11291a; }
 .rs-band { position: relative; height: 8px; border-radius: 4px; background: var(--soft); margin-top: 8px; }
 .rs-band i { position: absolute; left: 30%; width: 40%; top: 0; bottom: 0; background: color-mix(in srgb, var(--accent) 22%, transparent); border-radius: 4px; }
