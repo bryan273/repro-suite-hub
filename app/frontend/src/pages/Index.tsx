@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import SuiteTopBar from '@/components/SuiteTopBar';
+import { SuiteFaq, SuiteCta, SuiteStats } from '@/components/SuiteFooter';
 import {
   COPY,
   EXPLAINER_FEED,
@@ -348,6 +349,24 @@ function readStored<T extends string>(key: string, allowed: readonly T[], fallba
   return allowed.includes(v as T) ? (v as T) : fallback;
 }
 
+
+const FAQ = {
+  en: [
+    { q: 'What is Repro Suite?', a: 'Two tools for AI research papers. Paper Explainer turns a paper into a short narrated video. Paper Repro Agent re-runs the experiment and tells you whether the reported number holds. Smaller tools sit around them.' },
+    { q: 'Which one should I start with?', a: 'Start with Paper Explainer to understand a paper, then use Repro Lite for a quick check of one claim or the Paper Repro Agent for a full reproduction.' },
+    { q: 'How do you stop the AI from inventing things?', a: 'Every quote and number in an explainer video is matched against the paper text, and anything that fails is removed before recording. The reproduction agent fixes its tolerance before any code runs and audits its own work.' },
+    { q: 'Is it free?', a: 'You can try Paper Explainer without signing up. A free account gets more videos each day. Repro Desk offers a free pilot check.' },
+    { q: 'Who built it?', a: 'Group 1 of the AIID capstone at Tsinghua SIGS.' },
+  ],
+  zh: [
+    { q: 'Repro Suite 是什么？', a: '面向 AI 论文的两个工具。Paper Explainer 把论文变成简短的解说视频；Paper Repro Agent 重新运行实验，告诉你报告的数字是否成立。周围还有几个小工具。' },
+    { q: '应该先用哪个？', a: '先用 Paper Explainer 读懂论文，再用 Repro Lite 快速核验一个结论，或用 Paper Repro Agent 做完整复现。' },
+    { q: '如何避免 AI 编造内容？', a: '解说视频中的每句引文和每个数字都会与论文原文比对，未通过的在录制前被删除。复现智能体在运行代码前固定容差，并审查自己的工作。' },
+    { q: '免费吗？', a: 'Paper Explainer 无需注册即可试用，免费账号每天可生成更多视频。Repro Desk 提供免费试点核验。' },
+    { q: '谁做的？', a: '清华深圳国际研究生院 AIID 课程项目第 1 组。' },
+  ],
+};
+
 export default function Index() {
   const [lang, setLang] = useState<Lang>(() => readStored(LANG_KEY, ['en', 'zh'], 'en'));
   const [theme, setTheme] = useState<Theme>(() => readStored(THEME_KEY, ['light', 'dark'], 'light'));
@@ -409,6 +428,14 @@ export default function Index() {
           <ReproCard t={t} lang={lang} />
         </section>
 
+        <SuiteStats
+          items={
+            lang === 'zh'
+              ? [{ v: '40 秒', l: '解说视频时长' }, { v: '32', l: '基准测试的论文' }, { v: '6', l: '对比的模型' }, { v: '2', l: '语言：中文与英文' }]
+              : [{ v: '40 s', l: 'explainer video length' }, { v: '32', l: 'papers benchmarked' }, { v: '6', l: 'models compared' }, { v: '2', l: 'languages: English and 中文' }]
+          }
+        />
+
         <Section id="fit" title={t.fitTitle} sub={t.fitSub}>
           <FlowDiagram t={t} lang={lang} />
         </Section>
@@ -416,6 +443,14 @@ export default function Index() {
         <Section id="supporting" title={t.supportTitle} sub={t.supportSub}>
           <Supporting t={t} lang={lang} />
         </Section>
+
+        <SuiteFaq lang={lang} id="faq" items={FAQ[lang]} />
+        <SuiteCta
+          title={lang === 'zh' ? '先读懂，再核验。' : 'Understand it first. Then check it.'}
+          body={lang === 'zh' ? '从一篇论文开始，约 40 秒得到视频。' : 'Start with one paper. Get a video in about 40 seconds.'}
+          label={t.explain}
+          href={URLS.explainer}
+        />
 
         <Footer t={t} />
       </main>
