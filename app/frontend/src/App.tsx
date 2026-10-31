@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import BlogRoutes from './blog-routes';
 import Index from './pages/Index';
+import NotFound from './components/NotFound';
 import AuthCallback from './pages/AuthCallback';
 import AuthError from './pages/AuthError';
 // MODULE_IMPORTS_START
@@ -17,6 +18,7 @@ const AppRoutes = () => (
     {/* <Route path="/blog/*" element={<BlogRoutes />} /> */}
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
+    <Route path="*" element={<NotFound appId="hub" />} />
     {/* MODULE_ROUTES_START */}
     {/* MODULE_ROUTES_END */}
   </Routes>
