@@ -205,3 +205,13 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-even
 @media (max-width: 980px) { .rs-stage { height: 360px; } }
 @media (max-width: 520px) { .rs-stage { height: 320px; } .rs-stack { transform: rotateX(var(--rx, 10deg)) rotateY(var(--ry, 22deg)) scale(0.7); } }
 @media (prefers-reduced-motion: reduce) { .rs-stack { animation: none; transition: none; } }
+
+/* hub hero: centred copy with three flat cards in a row, so it does not repeat the Paper Repro Agent hero */
+.rs-stage { height: auto; perspective: none; display: block; width: 100%; max-width: 800px; }
+.rs-glow { display: none; }
+.rs-stack { width: auto; height: auto; transform: none !important; animation: none; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; text-align: left; }
+.rs-sheet { position: relative; inset: auto; min-height: 230px; transform: none; box-shadow: 0 1px 2px rgba(20, 20, 40, 0.05), 0 12px 30px rgba(20, 40, 80, 0.08); }
+.rs-s1, .rs-s2, .rs-s3 { transform: none; }
+@media (max-width: 720px) { .rs-stack { grid-template-columns: minmax(0, 1fr); } .rs-sheet { min-height: 180px; } .rs-stage { height: auto; } }
+.rs-stage { width: min(100%, 800px); }
+.rs-stack { width: 100%; }

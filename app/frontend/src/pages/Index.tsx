@@ -404,12 +404,12 @@ export default function Index() {
       />
 
       <main id="top" className="mx-auto w-full max-w-[1160px] px-5 sm:px-8">
-        <section className="grid items-center gap-4 pt-10 sm:pt-16 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-          <div>
+        <section className="grid justify-items-center gap-10 pt-10 text-center sm:pt-16">
+          <div className="flex flex-col items-center">
             <p className="text-[14px] font-semibold text-[color:var(--accent)]">{t.eyebrow}</p>
-            <h1 className="rs-h mt-4 max-w-3xl text-[clamp(2.4rem,6.4vw,4.4rem)] leading-[1.02]">{t.heroTitle}</h1>
-            <p className={`mt-6 max-w-xl text-[18px] leading-relaxed ${text2}`}>{t.heroSub}</p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+            <h1 className="rs-h mx-auto mt-4 max-w-3xl text-[clamp(2.4rem,6.4vw,4.4rem)] leading-[1.02]">{t.heroTitle}</h1>
+            <p className={`mx-auto mt-6 max-w-xl text-[18px] leading-relaxed ${text2}`}>{t.heroSub}</p>
+            <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
               <a href={URLS.explainer} {...ext} className="rs-btn rs-btn-primary">
                 {t.explain}
                 <Ext t={t} />
@@ -431,8 +431,8 @@ export default function Index() {
         <SuiteStats
           items={
             lang === 'zh'
-              ? [{ v: '40 秒', l: '解说视频时长' }, { v: '32', l: '基准测试的论文' }, { v: '6', l: '对比的模型' }, { v: '2', l: '语言：中文与英文' }]
-              : [{ v: '40 s', l: 'explainer video length' }, { v: '32', l: 'papers benchmarked' }, { v: '6', l: 'models compared' }, { v: '2', l: 'languages: English and 中文' }]
+              ? [{ v: '32', l: '基准测试的论文' }, { v: '6', l: '对比的模型' }]
+              : [{ v: '32', l: 'papers benchmarked' }, { v: '6', l: 'models compared' }]
           }
         />
 
