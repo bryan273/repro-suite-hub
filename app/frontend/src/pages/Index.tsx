@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import SuiteTopBar from '@/components/SuiteTopBar';
+import { BrowserFrame, Chip, Icon, Marquee, Reveal, SectionHead, SpotCard } from '@/components/SuiteUI';
 import { SuiteFaq, SuiteCta } from '@/components/SuiteFooter';
 import {
   COPY,
@@ -173,12 +174,35 @@ function HeroStack({ lang }: { lang: Lang }) {
   );
 }
 
+const FEATURES: Record<'en' | 'zh', { t: string; p: string; d: string; w?: string }[]> = {
+  en: [
+    { t: 'Quoted evidence', p: 'Every claim on screen links to a quote copied from the paper text. If a quote cannot be found, it is marked.', d: 'M7 8h10M7 12h6M5 4h14a1 1 0 011 1v14l-4-3H5a1 1 0 01-1-1V5a1 1 0 011-1z' },
+    { t: 'A clean second run', p: 'The agent deletes its results and re-runs everything from scratch. The verdict comes from the second run.', d: 'M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5' },
+    { t: 'Copied numbers are caught', p: 'The code is searched for the paper value. A number that was simply pasted in does not count.', d: 'M11 4a7 7 0 105 12l4 4M9 11l2 2 3-4' },
+    { t: 'Fixed before it runs', p: 'The target and the tolerance are written down before any code runs, so the bar cannot move afterwards.', d: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3zM9 12l2 2 4-4' },
+    { t: 'English and 中文', p: 'Videos, answers and reports in both languages, with the same checks on each.', d: 'M4 5h9M8.5 3v2M6 5c0 4 3 7 6 8M12 5c-1 4-4 7-8 8M14 20l4-9 4 9M15.5 17h5' },
+    { t: 'A human reads the report', p: 'For pilot checks from Repro Desk, a person reviews the report before it reaches you.', d: 'M16 11a4 4 0 10-8 0 4 4 0 008 0zM4 21a8 8 0 0116 0' },
+  ],
+  zh: [
+    { t: '引用有出处', p: '屏幕上的每个论断都链接到从论文原文复制的引文；找不到引文会被标出。', d: 'M7 8h10M7 12h6M5 4h14a1 1 0 011 1v14l-4-3H5a1 1 0 01-1-1V5a1 1 0 011-1z' },
+    { t: '干净的第二次运行', p: '智能体先删除结果，再从零重跑一遍。最终结论来自第二次运行。', d: 'M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5' },
+    { t: '抄来的数字会被发现', p: '会在代码里搜索论文中的数值，直接写进去的数字不算数。', d: 'M11 4a7 7 0 105 12l4 4M9 11l2 2 3-4' },
+    { t: '先定标准再运行', p: '目标值和容差在运行前写定，之后不能再改动标准。', d: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3zM9 12l2 2 4-4' },
+    { t: '中英双语', p: '视频、回答和报告都有中文和英文两个版本，检查标准相同。', d: 'M4 5h9M8.5 3v2M6 5c0 4 3 7 6 8M12 5c-1 4-4 7-8 8M14 20l4-9 4 9M15.5 17h5' },
+    { t: '人工审阅报告', p: 'Repro Desk 的试点检查，报告送到你手里之前会由真人审阅。', d: 'M16 11a4 4 0 10-8 0 4 4 0 008 0zM4 21a8 8 0 0116 0' },
+  ],
+};
+
 function Section({ id, title, sub, children }: { id?: string; title: string; sub?: string; children: ReactNode }) {
   return (
-    <section id={id} className="scroll-mt-20 pt-20 sm:pt-28">
-      <h2 className="rs-h text-[1.75rem] leading-tight sm:text-[2.25rem]">{title}</h2>
-      {sub && <p className={`mt-3 max-w-xl text-[17px] leading-relaxed ${text2}`}>{sub}</p>}
-      <div className="mt-10">{children}</div>
+    <section id={id} className="su-section">
+      <Reveal>
+        <h2 className="su-h2">{title}</h2>
+        {sub && <p className="su-lead">{sub}</p>}
+      </Reveal>
+      <Reveal className="mt-10" delay={80}>
+        {children}
+      </Reveal>
     </section>
   );
 }
@@ -404,23 +428,48 @@ export default function Index() {
       />
 
       <main id="top" className="mx-auto w-full max-w-[1160px] px-5 sm:px-8">
-        <section className="grid justify-items-center gap-10 pt-10 text-center sm:pt-16">
-          <div className="flex flex-col items-center">
-            <p className="text-[14px] font-semibold text-[color:var(--accent)]">{t.eyebrow}</p>
-            <h1 className="rs-h mx-auto mt-4 max-w-3xl text-[clamp(2.4rem,6.4vw,4.4rem)] leading-[1.02]">{t.heroTitle}</h1>
-            <p className={`mx-auto mt-6 max-w-xl text-[18px] leading-relaxed ${text2}`}>{t.heroSub}</p>
-            <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-              <a href={URLS.explainer} {...ext} className="rs-btn rs-btn-primary">
-                {t.explain}
-                <Ext t={t} />
-              </a>
-              <a href={URLS.repro} {...ext} className="rs-btn rs-btn-secondary">
-                {t.check}
-                <Ext t={t} />
-              </a>
-            </div>
+        <section className="su-hero">
+          <span className="su-pill">
+            <i />
+            {t.eyebrow}
+          </span>
+          <h1 className="su-title">
+            {(() => {
+              const parts = t.heroTitle.split(/(?<=[.。])\s*/).filter(Boolean);
+              return parts.length > 1 ? (
+                <>
+                  {parts[0]} <span className="su-grad block">{parts.slice(1).join(" ")}</span>
+                </>
+              ) : (
+                t.heroTitle
+              );
+            })()}
+          </h1>
+          <p className="su-sub">{t.heroSub}</p>
+          <div className="su-cta">
+            <a href={URLS.explainer} {...ext} className="su-btn">
+              {t.explain}
+              <Ext t={t} />
+            </a>
+            <a href={URLS.repro} {...ext} className="su-btn-2">
+              {t.check}
+              <Ext t={t} />
+            </a>
           </div>
-          <HeroStack lang={lang} />
+          <BrowserFrame
+            src={SHOTS.repro}
+            alt={t.shotAlt('Paper Repro Agent')}
+            url="bryan273.github.io/repro-suite/repro"
+            width={1424}
+            height={900}
+            chips={
+              <>
+                <Chip pos="b" label={lang === 'zh' ? '论文报告 0.85' : 'paper reports 0.85'} value="0.849" tag={lang === 'zh' ? '✓ 已复现' : '✓ Reproduced'} />
+                <Chip pos="a" label={lang === 'zh' ? '解说视频' : 'explainer video'} value="0:58" />
+              </>
+            }
+          />
+          <Marquee items={['DeepSeek-V4.1', 'Kimi-K3', 'GLM-5.3', 'Qwen3.8', 'Claude', 'GPT', 'arXiv', 'PDF', 'DOI', 'English', '中文']} />
         </section>
 
         <Section
@@ -433,6 +482,28 @@ export default function Index() {
             <ReproCard t={t} lang={lang} />
           </div>
         </Section>
+
+        <section className="su-section" id="why">
+          <Reveal>
+            <SectionHead
+              center
+              eyebrow={lang === 'zh' ? '为什么可信' : 'Why you can trust it'}
+              title={lang === 'zh' ? '每个数字都能回到原文。' : 'Every number traces back to the paper.'}
+              lead={lang === 'zh' ? '不是让 AI 给个说法，而是把过程摊开让你检查。' : 'No black-box answer. The steps are laid out so you can check them.'}
+            />
+          </Reveal>
+          <div className="su-bento">
+            {FEATURES[lang].map((f, i) => (
+              <Reveal key={f.t} delay={i * 70} className={`su-cell ${f.w ?? ''}`}>
+                <SpotCard>
+                  <Icon d={f.d} />
+                  <h3>{f.t}</h3>
+                  <p>{f.p}</p>
+                </SpotCard>
+              </Reveal>
+            ))}
+          </div>
+        </section>
 
         <Section id="fit" title={t.fitTitle} sub={t.fitSub}>
           <FlowDiagram t={t} lang={lang} />
