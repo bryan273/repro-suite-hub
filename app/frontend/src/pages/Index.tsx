@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import SuiteTopBar from '@/components/SuiteTopBar';
-import { BrowserFrame, Chip, Icon, Marquee, Reveal, SectionHead, SpotCard } from '@/components/SuiteUI';
+import { Chip, ChipGroups, Icon, Reveal, SectionHead, ShowcaseFrame, SpotCard } from '@/components/SuiteUI';
 import { SuiteFaq, SuiteCta } from '@/components/SuiteFooter';
 import {
   COPY,
@@ -456,20 +456,38 @@ export default function Index() {
               <Ext t={t} />
             </a>
           </div>
-          <BrowserFrame
-            src={SHOTS.repro}
-            alt={t.shotAlt('Paper Repro Agent')}
-            url="bryan273.github.io/repro-suite/repro"
-            width={1424}
-            height={900}
-            chips={
-              <>
+          <ShowcaseFrame
+            slides={[
+              { key: 'explainer', label: 'Paper Explainer', url: 'bryan273.github.io/repro-suite/explainer', src: SHOTS.explainer, alt: t.shotAlt('Paper Explainer') },
+              { key: 'repro', label: 'Paper Repro Agent', url: 'bryan273.github.io/repro-suite/repro', src: SHOTS.repro, alt: t.shotAlt('Paper Repro Agent') },
+              { key: 'lite', label: 'Repro Lite', url: 'bryan273.github.io/repro-suite/lite', src: SHOTS.reproLite, alt: t.shotAlt('Repro Lite') },
+              { key: 'reading', label: 'Reading Companion', url: 'bryan273.github.io/repro-suite/reading', src: SHOTS.reading, alt: t.shotAlt('Reading Companion') },
+              { key: 'indexboard', label: 'IndexBoard', url: 'bryan273.github.io/repro-suite/indexboard', src: SHOTS.indexboard, alt: t.shotAlt('IndexBoard') },
+              { key: 'desk', label: 'Repro Desk', url: 'bryan273.github.io/repro-suite/desk', src: SHOTS.reproDesk, alt: t.shotAlt('Repro Desk') },
+            ]}
+            chips={(k) =>
+              k === 'repro' ? (
                 <Chip pos="b" label={lang === 'zh' ? '论文报告 0.85' : 'paper reports 0.85'} value="0.849" tag={lang === 'zh' ? '✓ 已复现' : '✓ Reproduced'} />
-                <Chip pos="a" label={lang === 'zh' ? '解说视频' : 'explainer video'} value="0:58" />
-              </>
+              ) : k === 'explainer' ? (
+                <Chip pos="b" label={lang === 'zh' ? '解说视频' : 'explainer video'} value="0:58" />
+              ) : null
             }
           />
-          <Marquee items={['DeepSeek-V4.1', 'Kimi-K3', 'GLM-5.3', 'Qwen3.8', 'Claude', 'GPT', 'arXiv', 'PDF', 'DOI', 'English', '中文']} />
+          <ChipGroups
+            groups={
+              lang === 'zh'
+                ? [
+                    { title: '对比的模型', items: ['DeepSeek-V4.1', 'Kimi-K3', 'GLM-5.3', 'Qwen3.8'] },
+                    { title: '可输入的论文', items: ['arXiv 链接', 'PDF 链接', 'DOI'] },
+                    { title: '输出语言', items: ['English', '中文'] },
+                  ]
+                : [
+                    { title: 'Models compared', items: ['DeepSeek-V4.1', 'Kimi-K3', 'GLM-5.3', 'Qwen3.8'] },
+                    { title: 'Papers you can paste', items: ['arXiv link', 'PDF link', 'DOI'] },
+                    { title: 'Output language', items: ['English', '中文'] },
+                  ]
+            }
+          />
         </section>
 
         <Section
