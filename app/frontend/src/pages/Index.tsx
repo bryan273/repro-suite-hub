@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import SuiteTopBar from '@/components/SuiteTopBar';
-import { SuiteFaq, SuiteCta, SuiteStats } from '@/components/SuiteFooter';
+import { SuiteFaq, SuiteCta } from '@/components/SuiteFooter';
 import {
   COPY,
   EXPLAINER_FEED,
@@ -423,18 +423,16 @@ export default function Index() {
           <HeroStack lang={lang} />
         </section>
 
-        <section className="mt-12 grid gap-6 sm:mt-16 md:grid-cols-2">
-          <ExplainerCard t={t} lang={lang} feed={feed} />
-          <ReproCard t={t} lang={lang} />
-        </section>
-
-        <SuiteStats
-          items={
-            lang === 'zh'
-              ? [{ v: '32', l: '基准测试的论文' }, { v: '6', l: '对比的模型' }]
-              : [{ v: '32', l: 'papers benchmarked' }, { v: '6', l: 'models compared' }]
-          }
-        />
+        <Section
+          id="start"
+          title={lang === 'zh' ? '从这里开始' : 'Start here'}
+          sub={lang === 'zh' ? '两个工具各管一件事：先读懂论文，再核验它的数字。' : 'Two tools, one job each: understand the paper first, then check its number.'}
+        >
+          <div className="grid gap-6 md:grid-cols-2">
+            <ExplainerCard t={t} lang={lang} feed={feed} />
+            <ReproCard t={t} lang={lang} />
+          </div>
+        </Section>
 
         <Section id="fit" title={t.fitTitle} sub={t.fitSub}>
           <FlowDiagram t={t} lang={lang} />
