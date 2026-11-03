@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import SuiteTopBar from '@/components/SuiteTopBar';
-import { Chip, ChipGroups, Icon, Reveal, SectionHead, ShowcaseFrame, SpotCard } from '@/components/SuiteUI';
+import { Icon, Reveal, SectionHead, ShowcaseFrame, SpotCard } from '@/components/SuiteUI';
 import { SuiteFaq, SuiteCta } from '@/components/SuiteFooter';
 import {
   COPY,
@@ -465,28 +465,6 @@ export default function Index() {
               { key: 'indexboard', label: 'IndexBoard', url: 'bryan273.github.io/repro-suite/indexboard', src: SHOTS.indexboard, alt: t.shotAlt('IndexBoard') },
               { key: 'desk', label: 'Repro Desk', url: 'bryan273.github.io/repro-suite/desk', src: SHOTS.reproDesk, alt: t.shotAlt('Repro Desk') },
             ]}
-            chips={(k) =>
-              k === 'repro' ? (
-                <Chip pos="b" label={lang === 'zh' ? '论文报告 0.85' : 'paper reports 0.85'} value="0.849" tag={lang === 'zh' ? '✓ 已复现' : '✓ Reproduced'} />
-              ) : k === 'explainer' ? (
-                <Chip pos="b" label={lang === 'zh' ? '解说视频' : 'explainer video'} value="0:58" />
-              ) : null
-            }
-          />
-          <ChipGroups
-            groups={
-              lang === 'zh'
-                ? [
-                    { title: '对比的模型', items: ['DeepSeek-V4.1', 'Kimi-K3', 'GLM-5.3', 'Qwen3.8'] },
-                    { title: '可输入的论文', items: ['arXiv 链接', 'PDF 链接', 'DOI'] },
-                    { title: '输出语言', items: ['English', '中文'] },
-                  ]
-                : [
-                    { title: 'Models compared', items: ['DeepSeek-V4.1', 'Kimi-K3', 'GLM-5.3', 'Qwen3.8'] },
-                    { title: 'Papers you can paste', items: ['arXiv link', 'PDF link', 'DOI'] },
-                    { title: 'Output language', items: ['English', '中文'] },
-                  ]
-            }
           />
         </section>
 
