@@ -11,7 +11,6 @@ export const URLS = {
   benchmark: 'https://bryan273.github.io/repro-suite/repro/bench.html',
 } as const;
 
-export const EXPLAINER_FEED = 'https://wzdkroxbfrlqijbeiwpk.supabase.co/functions/v1/explainer-render?recent=1';
 
 export const SHOTS = {
   explainer: import.meta.env.BASE_URL + 'shots/paperexplainer.webp',
