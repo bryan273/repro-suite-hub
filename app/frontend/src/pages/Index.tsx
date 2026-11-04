@@ -7,7 +7,6 @@ import {
   FLOW,
   NAV_GROUPS,
   SHOTS,
-  DETAIL,
   SUPPORTING,
   URLS,
   type Copy,
@@ -166,7 +165,7 @@ function ExplainerCard({ t }: { t: Copy }) {
   return (
     <article className="rs-card flex min-w-0 flex-col p-5 sm:p-6">
       <div className="flex flex-1 flex-col">
-        <img src={DETAIL.explainer} alt="" width={1000} height={625} loading="lazy" decoding="async" className="mb-5 aspect-[16/10] w-full rounded-xl border border-[color:var(--line)] object-cover object-top" />
+        <img src={SHOTS.explainer} alt="" width={1424} height={900} loading="lazy" decoding="async" className="mb-5 aspect-[16/10] w-full rounded-xl border border-[color:var(--line)] object-cover object-top" />
         <Tag label={t.learnTag} name="Paper Explainer" />
         <p className={`mt-3 text-[16px] leading-relaxed ${text2}`}>{t.explainerText}</p>
         <div className="mt-auto pt-7">
@@ -184,7 +183,7 @@ function ReproCard({ t }: { t: Copy }) {
   return (
     <article className="rs-card flex min-w-0 flex-col p-5 sm:p-6">
       <div className="flex flex-1 flex-col">
-        <img src={DETAIL.repro} alt="" width={1000} height={625} loading="lazy" decoding="async" className="mb-5 aspect-[16/10] w-full rounded-xl border border-[color:var(--line)] object-cover object-top" />
+        <img src={SHOTS.repro} alt="" width={1424} height={900} loading="lazy" decoding="async" className="mb-5 aspect-[16/10] w-full rounded-xl border border-[color:var(--line)] object-cover object-top" />
         <Tag label={t.checkTag} name="Paper Repro Agent" />
         <p className={`mt-3 text-[16px] leading-relaxed ${text2}`}>{t.reproText}</p>
         <div className="mt-auto pt-7">
@@ -203,7 +202,7 @@ function Supporting({ t, lang }: { t: Copy; lang: Lang }) {
     <ul className="grid gap-5 sm:grid-cols-2 min-[1180px]:grid-cols-4">
       {SUPPORTING.map((s) => (
         <li key={s.name} className="rs-card flex min-w-0 flex-col p-4">
-          <img src={s.shot} alt="" width={1000} height={625} loading="lazy" decoding="async" className="mb-3 aspect-[16/10] w-full rounded-lg border border-[color:var(--line)] object-cover object-top" />
+          <img src={s.shot} alt="" width={1424} height={900} loading="lazy" decoding="async" className="mb-3 aspect-[16/10] w-full rounded-lg border border-[color:var(--line)] object-cover object-top" />
           <h3 className="rs-h text-[17px]">{s.name}</h3>
           <p className={`mt-1.5 flex-1 text-[14px] leading-relaxed ${text2}`}>{s.line[lang]}</p>
           <a
