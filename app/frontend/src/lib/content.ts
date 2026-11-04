@@ -11,16 +11,6 @@ export const URLS = {
   benchmark: 'https://bryan273.github.io/repro-suite/repro/bench.html',
 } as const;
 
-/** Close-ups of what each app produces, for the cards (the hero frame above shows the whole page). */
-export const DETAIL = {
-  explainer: import.meta.env.BASE_URL + 'shots/d-explainer.webp',
-  repro: import.meta.env.BASE_URL + 'shots/d-repro.webp',
-  reproLite: import.meta.env.BASE_URL + 'shots/d-lite.webp',
-  reading: import.meta.env.BASE_URL + 'shots/d-reading.webp',
-  indexboard: import.meta.env.BASE_URL + 'shots/d-indexboard.webp',
-  reproDesk: import.meta.env.BASE_URL + 'shots/d-desk.webp',
-} as const;
-
 
 export const SHOTS = {
   explainer: import.meta.env.BASE_URL + 'shots/paperexplainer.webp',
@@ -77,7 +67,7 @@ export const SUPPORTING: { name: string; url: string; shot: string; line: L }[] 
   {
     name: 'Repro Lite',
     url: URLS.reproLite,
-    shot: DETAIL.reproLite,
+    shot: SHOTS.reproLite,
     line: {
       en: 'Check one claim in about 40 seconds; the agent runs Python in your browser.',
       zh: '约 40 秒检验一个结论；智能体直接在你的浏览器中运行 Python。',
@@ -86,7 +76,7 @@ export const SUPPORTING: { name: string; url: string; shot: string; line: L }[] 
   {
     name: 'Reading Companion',
     url: URLS.reading,
-    shot: DETAIL.reading,
+    shot: SHOTS.reading,
     line: {
       en: 'An agent reads arXiv papers with you, cites every claim and marks what it could not verify.',
       zh: '智能体陪你阅读 arXiv 论文，为每个结论注明出处，并标出无法核实的内容。',
@@ -95,7 +85,7 @@ export const SUPPORTING: { name: string; url: string; shot: string; line: L }[] 
   {
     name: 'IndexBoard',
     url: URLS.indexboard,
-    shot: DETAIL.indexboard,
+    shot: SHOTS.indexboard,
     line: {
       en: 'Turn any results into an honest leaderboard with intervals and ties.',
       zh: '把任意结果变成一份标注置信区间与并列名次的诚实排行榜。',
@@ -104,7 +94,7 @@ export const SUPPORTING: { name: string; url: string; shot: string; line: L }[] 
   {
     name: 'Repro Desk',
     url: URLS.reproDesk,
-    shot: DETAIL.reproDesk,
+    shot: SHOTS.reproDesk,
     line: {
       en: 'Ask for a human-checked reproduction of a paper, as a free pilot.',
       zh: '以免费试点的形式，申请一次经人工核查的论文复现。',
