@@ -18,7 +18,7 @@ type Theme = 'light' | 'dark';
 const THEME_KEY = 'repro.theme2';
 const LANG_KEY = 'rs-lang';
 const ARROW = '\u2197\uFE0E';
-const ext = { target: '_blank', rel: 'noopener noreferrer' } as const;
+const ext = {} as const;   // every link here is another app of the suite: same tab, so the suite feels like one site
 const text2 = 'text-[color:var(--text2)]';
 
 function Ext({ t }: { t: Copy }) {
