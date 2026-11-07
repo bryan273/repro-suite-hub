@@ -141,3 +141,11 @@ html { scroll-behavior: smooth; }
 .su-groups li { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--su-line); background: var(--su-card); font: 600 14px/1 Inter, sans-serif; color: var(--su-text); }
 @media (max-width: 860px) { .su-groups { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; } .su-groups ul { justify-content: center; } }
 @media (prefers-reduced-motion: reduce) { .su-slides img { transition: none; transform: none; } }
+
+/* v4 su-pill: plain kicker, not a floating badge */
+.su-pill { padding: 0; border: 0; background: none; box-shadow: none; font: 500 12px/1.3 'JetBrains Mono', monospace; color: var(--su-text2); }
+.su-pill i { display: none; }
+:lang(zh-CN) .su-grad { font-style: normal; }
+:lang(zh-CN) .su-title, :lang(zh-CN) .su-h2 { letter-spacing: 0; }
+.su-frame, .su-card { box-shadow: none; }
+.su-card:hover { transform: none; }
