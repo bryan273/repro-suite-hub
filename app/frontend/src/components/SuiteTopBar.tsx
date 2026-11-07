@@ -16,6 +16,8 @@ type Props = {
   onToggleDark: () => void;
   lang: Lang;
   onLang: (l: Lang) => void;
+  /** optional primary action, shown at the right of the bar */
+  cta?: { label: string; href: string };
 };
 
 export const SUITE: { id: string; label: string; href: string; en: string; zh: string }[] = [
@@ -60,7 +62,7 @@ function NavItem({ l, onDone }: { l: NavLink; onDone: () => void }) {
   );
 }
 
-export default function SuiteTopBar({ appId, brand, letter, homeTo, nav, dark, onToggleDark, lang, onLang }: Props) {
+export default function SuiteTopBar({ appId, brand, letter, homeTo, nav, dark, onToggleDark, lang, onLang, cta }: Props) {
   const t = T[lang];
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -134,6 +136,11 @@ export default function SuiteTopBar({ appId, brand, letter, homeTo, nav, dark, o
           <button type="button" className="stb-pill" onClick={() => onLang(lang === 'en' ? 'zh' : 'en')} aria-label="Language">
             {lang === 'en' ? '中文' : 'EN'}
           </button>
+          {cta && (
+            <a className="stb-cta" href={cta.href} target="_blank" rel="noopener noreferrer">
+              {cta.label}
+            </a>
+          )}
           <button type="button" className="stb-ic stb-burger" onClick={() => setOpen((v) => !v)} aria-label={t.menu} aria-expanded={open}>
             {open ? '✕' : '☰'}
           </button>

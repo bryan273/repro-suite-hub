@@ -1,405 +1,510 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import SuiteTopBar from '@/components/SuiteTopBar';
-import { Icon, Reveal, SectionHead, ShowcaseFrame, SpotCard } from '@/components/SuiteUI';
-import { SuiteFaq, SuiteCta } from '@/components/SuiteFooter';
-import {
-  COPY,
-  FLOW,
-  NAV_GROUPS,
-  SHOTS,
-  SUPPORTING,
-  URLS,
-  type Copy,
-  type Lang,
-} from '@/lib/content';
+import { Reveal } from '@/components/SuiteUI';
+import '@/components/landing.css';
+import { COPY, SUPPORTING, URLS, type Lang } from '@/lib/content';
+import { EXPLAINER_DEMO, HERO_RUN, METRICS, RUNS, STEPS, T, TABLE, replay, type Metric, type Verdict } from '@/lib/landing';
 
 type Theme = 'light' | 'dark';
+type Tx = (typeof T)['en'] | (typeof T)['zh'];
 
 const THEME_KEY = 'repro.theme2';
 const LANG_KEY = 'rs-lang';
-const ARROW = '\u2197\uFE0E';
 const ext = { target: '_blank', rel: 'noopener noreferrer' } as const;
-const text2 = 'text-[color:var(--text2)]';
+const STEP_MS = 1500;
+const TOOL_ICONS = [
+  'M4 6h16M4 12h7M4 18h7M14 15l2.5 2.5L21 12',
+  'M12 6.5C10 5 7 4.5 4 5v14c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5zM12 6.5V20.5',
+  'M5 20v-7M12 20V5M19 20v-4M3 20h18',
+  'M16 8a4 4 0 11-8 0 4 4 0 018 0zM4.5 20.5a7.5 7.5 0 0115 0',
+];
 
-function Ext({ t }: { t: Copy }) {
-  return (
-    <>
-      <span aria-hidden className="text-[0.85em]">
-        {ARROW}
-      </span>
-      <span className="sr-only">{t.newTab}</span>
-    </>
-  );
+function readStored<K extends string>(key: string, allowed: readonly K[], fallback: K): K {
+  try {
+    const v = localStorage.getItem(key);
+    return allowed.includes(v as K) ? (v as K) : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
-function Logo() {
-  return (
-    <span
-      aria-hidden
-      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[#1d1d1f] text-[17px] font-extrabold text-white dark:bg-white dark:text-[#1d1d1f]"
-    >
-      R
-    </span>
-  );
+function save(key: string, v: string) {
+  try {
+    localStorage.setItem(key, v);
+  } catch {
+    /* private mode: the choice just lasts for this page */
+  }
 }
 
-function HeroStack({ lang }: { lang: Lang }) {
-  const host = useRef<HTMLDivElement>(null);
-  const stack = useRef<HTMLDivElement>(null);
+function Tag({ v, t }: { v: Verdict; t: Tx }) {
+  return <span className={`pp-tag ${v}`}>{t[v]}</span>;
+}
+
+/** Replays the recorded fastText run. Steps advance while the window is on screen; reduced motion shows the finished run. */
+function RunWindow({ t, lang }: { t: Tx; lang: Lang }) {
+  const steps = STEPS[lang];
+  const end = steps.length;
+  const still = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const [step, setStep] = useState(still ? end : 0);
+  const [seen, setSeen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    const h = host.current;
-    const s = stack.current;
-    if (!h || !s || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const move = (e: PointerEvent) => {
-      const r = h.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      s.style.setProperty('--ry', `${(22 + x * 22).toFixed(1)}deg`);
-      s.style.setProperty('--rx', `${(10 - y * 16).toFixed(1)}deg`);
-    };
-    const leave = () => {
-      s.style.removeProperty('--ry');
-      s.style.removeProperty('--rx');
-    };
-    h.addEventListener('pointermove', move);
-    h.addEventListener('pointerleave', leave);
-    return () => {
-      h.removeEventListener('pointermove', move);
-      h.removeEventListener('pointerleave', leave);
-    };
+    const el = box.current;
+    if (!el || !('IntersectionObserver' in window)) {
+      setSeen(true);
+      return;
+    }
+    const io = new IntersectionObserver((e) => setSeen(e[0].isIntersecting), { threshold: 0.2 });
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
-  const zh = lang === 'zh';
+
+  useEffect(() => {
+    if (!seen || step >= end) return;
+    const id = window.setTimeout(() => setStep((s) => s + 1), step === 0 ? 700 : STEP_MS);
+    return () => window.clearTimeout(id);
+  }, [seen, step, end]);
+
   return (
-    <div ref={host} className="rs-stage" aria-hidden>
-      <div className="rs-glow" />
-      <div ref={stack} className="rs-stack">
-        <div className="rs-sheet rs-s1">
-          <span className="tag">1 · {zh ? '学习' : 'Learn'}</span>
-          <div className="rs-vid">
-            <i>&#9654;</i>
-            <span />
+    <div className="pp-win" ref={box} data-step={step > 0 ? step : undefined}>
+      <div className="pp-win-bar">
+        <span>
+          {t.winTitle} <b>arXiv:1607.01759</b>
+        </span>
+        <span>{t.winRun}</span>
+      </div>
+      <div className="pp-win-body">
+        <div className="pp-sheet">
+          <p className="pp-cap">
+            <b>{t.cap1}</b> {t.cap2}
+          </p>
+          <table className="pp-tbl">
+            <thead>
+              <tr>
+                {TABLE.head.map((h, i) => (
+                  <th key={h} className={i > 2 ? 'opt' : undefined}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {TABLE.rows.map((r, ri) => (
+                <tr key={r[0]} className={ri === 4 ? 'sep' : undefined}>
+                  {r.map((c, i) => (
+                    <td key={i} className={[i > 2 ? 'opt' : '', ri === 5 && i === 1 ? 'hit' : ''].join(' ').trim() || undefined}>
+                      {ri === 5 && i === 1 ? <span>{c}</span> : c}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="pp-source">{t.source}</p>
+          <div className={`pp-verdict ${step >= end ? 'on' : ''}`}>
+            <div>
+              <span>{t.paper}</span>
+              <strong>92.5</strong>
+            </div>
+            <div>
+              <span>{t.rerun}</span>
+              <strong>92.34</strong>
+            </div>
+            <div>
+              <span>{t.gap}</span>
+              <strong>0.16</strong>
+            </div>
+            <Tag v="ok" t={t} />
           </div>
-          <small className={text2}>{zh ? '40 秒讲解视频' : '40 second explainer'}</small>
         </div>
-        <div className="rs-sheet rs-s2">
-          <span className="tag">2 · {zh ? '核验' : 'Check'}</span>
-          <div className="rs-big">0.849</div>
-          <small className={text2}>{zh ? '论文报告 0.85' : 'reported 0.85'}</small>
-          <span className="rs-ok">{zh ? '✓ 已复现' : '✓ Reproduced'}</span>
-          <div className="rs-band">
-            <i />
-            <b />
-          </div>
+        <div className="pp-log">
+          <ol className="pp-steps">
+            {steps.map((s, i) => (
+              <li key={s.t} className={`pp-step ${i < step ? 'done' : i === step ? 'now' : ''}`}>
+                <i aria-hidden />
+                <div>
+                  <b>{s.t}</b>
+                  <small>{s.p}</small>
+                </div>
+                <time>{s.at}</time>
+              </li>
+            ))}
+          </ol>
         </div>
-        <div className="rs-sheet rs-s3">
-          <span className="tag">3 · {zh ? '对比' : 'Compare'}</span>
-          <div className="rs-bars">
-            <div>
-              DeepSeek-V4.1 · 89.2
-              <i style={{ width: '92%' }} />
-            </div>
-            <div>
-              Kimi-K3 · 86.6
-              <i style={{ width: '88%' }} />
-            </div>
-            <div>
-              GLM-5.3 · 85.6
-              <i style={{ width: '86%' }} />
-            </div>
-            <div>
-              Qwen3.8 · 84.1
-              <i style={{ width: '84%' }} />
-            </div>
-          </div>
-          <small className={text2}>{zh ? '5 个模型统计上打平' : '5 of 6 models tied'}</small>
-        </div>
+      </div>
+      <div className="pp-win-foot">
+        <span>{t.footRun}</span>
+        <span>
+          {!still && (
+            <>
+              <button type="button" className="pp-replay" onClick={() => setStep(0)}>
+                {t.again}
+              </button>
+              {' · '}
+            </>
+          )}
+          <a className="pp-link" href={replay(HERO_RUN)} {...ext}>
+            {t.open}
+          </a>
+        </span>
       </div>
     </div>
   );
 }
 
-const FEATURES: Record<'en' | 'zh', { t: string; p: string; d: string; w?: string }[]> = {
-  en: [
-    { t: 'Quoted evidence', p: 'Every claim on screen links to a quote copied from the paper text. If a quote cannot be found, it is marked.', d: 'M7 8h10M7 12h6M5 4h14a1 1 0 011 1v14l-4-3H5a1 1 0 01-1-1V5a1 1 0 011-1z' },
-    { t: 'A clean second run', p: 'The agent deletes its results and re-runs everything from scratch. The verdict comes from the second run.', d: 'M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5' },
-    { t: 'Copied numbers are caught', p: 'The code is searched for the paper value. A number that was simply pasted in does not count.', d: 'M11 4a7 7 0 105 12l4 4M9 11l2 2 3-4' },
-    { t: 'Fixed before it runs', p: 'The target and the tolerance are written down before any code runs, so the bar cannot move afterwards.', d: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3zM9 12l2 2 4-4' },
-    { t: 'English and 中文', p: 'Videos, answers and reports in both languages, with the same checks on each.', d: 'M4 5h9M8.5 3v2M6 5c0 4 3 7 6 8M12 5c-1 4-4 7-8 8M14 20l4-9 4 9M15.5 17h5' },
-    { t: 'A human reads the report', p: 'For pilot checks from Repro Desk, a person reviews the report before it reaches you.', d: 'M16 11a4 4 0 10-8 0 4 4 0 008 0zM4 21a8 8 0 0116 0' },
-  ],
-  zh: [
-    { t: '引用有出处', p: '屏幕上的每个论断都链接到从论文原文复制的引文；找不到引文会被标出。', d: 'M7 8h10M7 12h6M5 4h14a1 1 0 011 1v14l-4-3H5a1 1 0 01-1-1V5a1 1 0 011-1z' },
-    { t: '干净的第二次运行', p: '智能体先删除结果，再从零重跑一遍。最终结论来自第二次运行。', d: 'M4 12a8 8 0 0114-5.3L20 9M20 4v5h-5M20 12a8 8 0 01-14 5.3L4 15M4 20v-5h5' },
-    { t: '抄来的数字会被发现', p: '会在代码里搜索论文中的数值，直接写进去的数字不算数。', d: 'M11 4a7 7 0 105 12l4 4M9 11l2 2 3-4' },
-    { t: '先定标准再运行', p: '目标值和容差在运行前写定，之后不能再改动标准。', d: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3zM9 12l2 2 4-4' },
-    { t: '中英双语', p: '视频、回答和报告都有中文和英文两个版本，检查标准相同。', d: 'M4 5h9M8.5 3v2M6 5c0 4 3 7 6 8M12 5c-1 4-4 7-8 8M14 20l4-9 4 9M15.5 17h5' },
-    { t: '人工审阅报告', p: 'Repro Desk 的试点检查，报告送到你手里之前会由真人审阅。', d: 'M16 11a4 4 0 10-8 0 4 4 0 008 0zM4 21a8 8 0 0116 0' },
-  ],
-};
-
-function Section({ id, title, sub, children }: { id?: string; title: string; sub?: string; children: ReactNode }) {
+function Bars({ m }: { m: Metric }) {
+  const pos = (v: number) => `${((v - m.min) / (m.max - m.min)) * 100}%`;
   return (
-    <section id={id} className="su-section">
+    <div className="pp-rows">
+      {m.rows.map((r) => (
+        <div className="pp-row" key={r.name}>
+          <span>{r.name}</span>
+          <span className="pp-track" aria-hidden>
+            {r.lo !== undefined && r.hi !== undefined ? (
+              <>
+                <i style={{ left: pos(r.lo), width: `calc(${pos(r.hi)} - ${pos(r.lo)})` }} />
+                <b style={{ left: pos(r.v) }} />
+              </>
+            ) : (
+              <u style={{ width: pos(r.v) }} />
+            )}
+          </span>
+          <span>
+            <b>{r.label}</b>
+            {r.lo !== undefined && ` (${r.lo}–${r.hi})`}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Benchmark({ t, lang }: { t: Tx; lang: Lang }) {
+  const [k, setK] = useState(0);
+  const m = METRICS[k];
+  return (
+    <section id="benchmark" className="pp-bench-sec">
       <Reveal>
-        <h2 className="su-h2">{title}</h2>
-        {sub && <p className="su-lead">{sub}</p>}
+        <div className="pp-bench-head">
+          <div>
+            <p className="pp-kick">{t.benchKick}</p>
+            <h2 className="pp-h2">{t.benchH}</h2>
+          </div>
+          <a className="pp-btn line" href={URLS.benchmark} {...ext}>
+            {t.benchAll}
+          </a>
+        </div>
       </Reveal>
-      <Reveal className="mt-10" delay={80}>
-        {children}
+      <Reveal delay={60}>
+        <div className="pp-bench">
+          <div>
+            <div className="pp-tabs" role="tablist" aria-label={t.benchKick}>
+              {METRICS.map((x, i) => (
+                <button key={x.key} type="button" role="tab" aria-selected={i === k} onClick={() => setK(i)}>
+                  {x.tab[lang]}
+                </button>
+              ))}
+              <p className="pp-tabnote">{m.note[lang]}</p>
+            </div>
+          </div>
+          <Bars m={m} />
+        </div>
+        <p className="pp-bench-note">{t.flips}</p>
       </Reveal>
     </section>
   );
 }
 
-function Tag({ label, name }: { label: string; name: string }) {
+function Runs({ t }: { t: Tx }) {
   return (
-    <p className="text-[13px] font-semibold">
-      <span className="text-[color:var(--accent)]">{label}</span>
-      <span className={`mx-1.5 ${text2}`}>·</span>
-      <span className="text-[color:var(--text)]">{name}</span>
-    </p>
-  );
-}
-
-function ExplainerCard({ t }: { t: Copy }) {
-  return (
-    <article className="rs-card flex min-w-0 flex-col p-5 sm:p-6">
-      <div className="flex flex-1 flex-col">
-        <img src={SHOTS.explainer} alt="" width={1424} height={900} loading="lazy" decoding="async" className="mb-5 aspect-[16/10] w-full rounded-xl border border-[color:var(--line)] object-cover object-top" />
-        <Tag label={t.learnTag} name="Paper Explainer" />
-        <p className={`mt-3 text-[16px] leading-relaxed ${text2}`}>{t.explainerText}</p>
-        <div className="mt-auto pt-7">
-          <a href={URLS.explainer} {...ext} className="rs-btn rs-btn-primary">
-            {t.makeVideo}
-            <Ext t={t} />
-          </a>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function ReproCard({ t }: { t: Copy }) {
-  return (
-    <article className="rs-card flex min-w-0 flex-col p-5 sm:p-6">
-      <div className="flex flex-1 flex-col">
-        <img src={SHOTS.repro} alt="" width={1424} height={900} loading="lazy" decoding="async" className="mb-5 aspect-[16/10] w-full rounded-xl border border-[color:var(--line)] object-cover object-top" />
-        <Tag label={t.checkTag} name="Paper Repro Agent" />
-        <p className={`mt-3 text-[16px] leading-relaxed ${text2}`}>{t.reproText}</p>
-        <div className="mt-auto pt-7">
-          <a href={URLS.repro} {...ext} className="rs-btn rs-btn-primary">
-            {t.watchRepro}
-            <Ext t={t} />
-          </a>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function Supporting({ t, lang }: { t: Copy; lang: Lang }) {
-  return (
-    <ul className="grid gap-5 sm:grid-cols-2 min-[1180px]:grid-cols-4">
-      {SUPPORTING.map((s) => (
-        <li key={s.name} className="rs-card flex min-w-0 flex-col p-4">
-          <img src={s.shot} alt="" width={1424} height={900} loading="lazy" decoding="async" className="mb-3 aspect-[16/10] w-full rounded-lg border border-[color:var(--line)] object-cover object-top" />
-          <h3 className="rs-h text-[17px]">{s.name}</h3>
-          <p className={`mt-1.5 flex-1 text-[14px] leading-relaxed ${text2}`}>{s.line[lang]}</p>
-          <a
-            href={s.url}
-            {...ext}
-            className="rs-focus mt-3 inline-flex min-h-9 w-fit items-center gap-1 rounded text-[14px] font-semibold text-[color:var(--accent)] hover:underline"
-          >
-            {t.open}
-            <Ext t={t} />
-          </a>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function Footer({ t }: { t: Copy }) {
-  const all = NAV_GROUPS.flatMap((g) => g.links);
-  return (
-    <footer className="mt-24 border-t border-[color:var(--line)] py-12 sm:mt-32">
-      <div className="grid gap-10 md:grid-cols-2">
-        <div className="flex items-start gap-3">
-          <Logo />
-          <div className="min-w-0 text-sm">
-            <p className="font-extrabold tracking-[-0.02em]">Repro Suite</p>
-            <p className="mt-2 text-[color:var(--text)]">{t.footTeam}</p>
-            <p className={`mt-1 ${text2}`}>{t.footPartners}</p>
-          </div>
-        </div>
-        <nav aria-label={t.footApps}>
-          <p className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${text2}`}>{t.footApps}</p>
-          <ul className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2">
-            {all.map((l) => (
-              <li key={l.name}>
-                <a
-                  href={l.url}
-                  {...ext}
-                  className="rs-focus inline-flex items-center gap-1 rounded py-1 text-sm text-[color:var(--text)] hover:text-[color:var(--accent)]"
-                >
-                  {l.name}
-                  <Ext t={t} />
-                </a>
-              </li>
+    <section id="runs" className="pp-runs-sec">
+      <Reveal>
+        <p className="pp-kick">{t.runsKick}</p>
+        <h2 className="pp-h2">{t.runsH}</h2>
+        <p className="pp-p" style={{ maxWidth: '62ch' }}>
+          {t.runsP}
+        </p>
+      </Reveal>
+      <Reveal delay={60}>
+        <table className="pp-runs">
+          <thead>
+            <tr>
+              <th scope="col">{t.colPaper}</th>
+              <th scope="col">{t.colVerdict}</th>
+              <th scope="col">{t.colRoute}</th>
+              <th scope="col" style={{ textAlign: 'right' }}>
+                {t.colCost}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {RUNS.map((r) => (
+              <tr key={r.file}>
+                <td>
+                  <a href={replay(r.file)} {...ext}>
+                    {r.title}
+                  </a>
+                </td>
+                <td>
+                  <Tag v={r.verdict} t={t} />
+                </td>
+                <td className="rt">{t.route[r.route]}</td>
+                <td className="n">
+                  {r.min} min · ¥{r.cny}
+                </td>
+              </tr>
             ))}
-          </ul>
-        </nav>
-      </div>
-    </footer>
+          </tbody>
+        </table>
+      </Reveal>
+    </section>
   );
 }
-
-function readStored<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
-  const v = localStorage.getItem(key);
-  return allowed.includes(v as T) ? (v as T) : fallback;
-}
-
-
-const FAQ = {
-  en: [
-    { q: 'What is Repro Suite?', a: 'Two tools for AI research papers. Paper Explainer turns a paper into a short narrated video. Paper Repro Agent re-runs the experiment and tells you whether the reported number holds. Smaller tools sit around them.' },
-    { q: 'Which one should I start with?', a: 'Start with Paper Explainer to understand a paper, then use Repro Lite for a quick check of one claim or the Paper Repro Agent for a full reproduction.' },
-    { q: 'How do you stop the AI from inventing things?', a: 'Every quote and number in an explainer video is matched against the paper text, and anything that fails is removed before recording. The reproduction agent fixes its tolerance before any code runs and audits its own work.' },
-    { q: 'Is it free?', a: 'You can try Paper Explainer without signing up. A free account gets more videos each day. Repro Desk offers a free pilot check.' },
-    { q: 'Who built it?', a: 'Group 1 of the AIID capstone at Tsinghua SIGS.' },
-  ],
-  zh: [
-    { q: 'Repro Suite 是什么？', a: '面向 AI 论文的两个工具。Paper Explainer 把论文变成简短的解说视频；Paper Repro Agent 重新运行实验，告诉你报告的数字是否成立。周围还有几个小工具。' },
-    { q: '应该先用哪个？', a: '先用 Paper Explainer 读懂论文，再用 Repro Lite 快速核验一个结论，或用 Paper Repro Agent 做完整复现。' },
-    { q: '如何避免 AI 编造内容？', a: '解说视频中的每句引文和每个数字都会与论文原文比对，未通过的在录制前被删除。复现智能体在运行代码前固定容差，并审查自己的工作。' },
-    { q: '免费吗？', a: 'Paper Explainer 无需注册即可试用，免费账号每天可生成更多视频。Repro Desk 提供免费试点核验。' },
-    { q: '谁做的？', a: '清华深圳国际研究生院 AIID 课程项目第 1 组。' },
-  ],
-};
 
 export default function Index() {
   const [lang, setLang] = useState<Lang>(() => readStored(LANG_KEY, ['en', 'zh'], 'en'));
   const [theme, setTheme] = useState<Theme>(() => readStored(THEME_KEY, ['light', 'dark'], 'light'));
-  const t = COPY[lang];
+  const t: Tx = T[lang];
+  const copy = COPY[lang];
+  const zh = lang === 'zh';
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
-    localStorage.setItem(THEME_KEY, theme);
+    save(THEME_KEY, theme);
   }, [theme]);
 
   useEffect(() => {
-    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
-    localStorage.setItem(LANG_KEY, lang);
-  }, [lang]);
+    document.documentElement.lang = zh ? 'zh-CN' : 'en';
+    save(LANG_KEY, lang);
+  }, [lang, zh]);
 
   const nav = [
-    { label: lang === 'zh' ? '概览' : 'Overview', href: '#top' },
-    { label: lang === 'zh' ? '从这里开始' : 'Start here', href: '#start' },
-    { label: t.supportTitle, href: '#supporting' },
+    { label: zh ? '产品' : 'Products', href: '#products' },
+    { label: zh ? '基准' : 'Benchmark', href: '#benchmark' },
+    { label: zh ? '运行记录' : 'Runs', href: '#runs' },
+    { label: zh ? '工具' : 'Tools', href: '#tools' },
   ];
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden">
-      <SuiteTopBar
-        appId="hub"
-        brand="Repro Suite"
-        letter="R"
-        homeTo="/"
-        nav={nav}
-        dark={theme === 'dark'}
-        onToggleDark={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-        lang={lang}
-        onLang={setLang}
-      />
+    <div className="pp min-h-screen">
+      <SuiteTopBar appId="hub" brand="Repro Suite" letter="R" homeTo="/" nav={nav} dark={theme === 'dark'} onToggleDark={() => setTheme(theme === 'dark' ? 'light' : 'dark')} lang={lang} onLang={setLang} cta={{ label: t.explain, href: URLS.explainer }} />
 
-      <main id="top" className="mx-auto w-full max-w-[1160px] px-5 sm:px-8">
-        <section className="su-hero">
-          <span className="su-pill">
-            <i />
-            {t.eyebrow}
-          </span>
-          <h1 className="su-title">
-            {(() => {
-              const parts = t.heroTitle.split(/(?<=[.。])\s*/).filter(Boolean);
-              return parts.length > 1 ? (
-                <>
-                  {parts[0]} <span className="su-grad block">{parts.slice(1).join(" ")}</span>
-                </>
-              ) : (
-                t.heroTitle
-              );
-            })()}
-          </h1>
-          <p className="su-sub">{t.heroSub}</p>
-          <div className="su-cta">
-            <a href={URLS.explainer} {...ext} className="su-btn">
-              {t.explain}
-              <Ext t={t} />
-            </a>
-            <a href={URLS.repro} {...ext} className="su-btn-2">
-              {t.check}
-              <Ext t={t} />
-            </a>
+      <main id="top" className="pp-wrap">
+        <section className="pp-hero">
+          <div className="pp-hero-top">
+            <h1 className="pp-h1">
+              {t.h1a}
+              {zh && <br />}
+              {t.h1c}
+              <em className="pp-mark">{t.h1b}</em>
+            </h1>
+            <div>
+              <p className="pp-lede">{t.lede}</p>
+              <div className="pp-cta">
+                <a className="pp-btn ink" href={URLS.explainer} {...ext}>
+                  {t.explain}
+                </a>
+                <a className="pp-btn line" href={URLS.repro} {...ext}>
+                  {t.check}
+                </a>
+              </div>
+              <p className="pp-with">{t.withLine}</p>
+            </div>
           </div>
-          <ShowcaseFrame
-            slides={[
-              { key: 'explainer', label: 'Paper Explainer', url: 'bryan273.github.io/repro-suite/explainer', src: SHOTS.explainer, alt: t.shotAlt('Paper Explainer') },
-              { key: 'repro', label: 'Paper Repro Agent', url: 'bryan273.github.io/repro-suite/repro', src: SHOTS.repro, alt: t.shotAlt('Paper Repro Agent') },
-              { key: 'lite', label: 'Repro Lite', url: 'bryan273.github.io/repro-suite/lite', src: SHOTS.reproLite, alt: t.shotAlt('Repro Lite') },
-              { key: 'reading', label: 'Reading Companion', url: 'bryan273.github.io/repro-suite/reading', src: SHOTS.reading, alt: t.shotAlt('Reading Companion') },
-              { key: 'indexboard', label: 'IndexBoard', url: 'bryan273.github.io/repro-suite/indexboard', src: SHOTS.indexboard, alt: t.shotAlt('IndexBoard') },
-              { key: 'desk', label: 'Repro Desk', url: 'bryan273.github.io/repro-suite/desk', src: SHOTS.reproDesk, alt: t.shotAlt('Repro Desk') },
-            ]}
-          />
+          <RunWindow t={t} lang={lang} />
+          <dl className="pp-nums">
+            {t.nums.map(([v, l]) => (
+              <div key={l}>
+                <dt>{l}</dt>
+                <dd>{v}</dd>
+              </div>
+            ))}
+          </dl>
         </section>
 
-        <Section
-          id="start"
-          title={lang === 'zh' ? '从这里开始' : 'Start here'}
-          sub={lang === 'zh' ? '两个工具各管一件事：先读懂论文，再核验它的数字。' : 'Two tools, one job each: understand the paper first, then check its number.'}
-        >
-          <div className="grid gap-6 md:grid-cols-2">
-            <ExplainerCard t={t} />
-            <ReproCard t={t} />
-          </div>
-        </Section>
-
-        <section className="su-section" id="why">
+        <section className="pp-state">
           <Reveal>
-            <SectionHead
-              center
-              eyebrow={lang === 'zh' ? '为什么可信' : 'Why you can trust it'}
-              title={lang === 'zh' ? '每个数字都能回到原文。' : 'Every number traces back to the paper.'}
-              lead={lang === 'zh' ? '不是让 AI 给个说法，而是把过程摊开让你检查。' : 'No black-box answer. The steps are laid out so you can check them.'}
-            />
+            <p>
+              {t.state1}
+              <span>{t.state2}</span>
+            </p>
           </Reveal>
-          <div className="su-bento">
-            {FEATURES[lang].map((f, i) => (
-              <Reveal key={f.t} delay={i * 70} className={`su-cell ${f.w ?? ''}`}>
-                <SpotCard>
-                  <Icon d={f.d} />
-                  <h3>{f.t}</h3>
-                  <p>{f.p}</p>
-                </SpotCard>
-              </Reveal>
+        </section>
+
+        <section id="products" style={{ paddingTop: 112 }}>
+          <Reveal>
+            <p className="pp-kick">{t.prodKick}</p>
+            <h2 className="pp-h2">{t.prodH}</h2>
+          </Reveal>
+          <div className="pp-prods">
+            <Reveal className="pp-prod">
+              <div>
+                <p className="pp-kick">01</p>
+                <h3>{t.expName}</h3>
+                <p className="pp-p">{t.expText}</p>
+                <ul className="pp-facts">
+                  {t.expFacts.map((f) => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
+                <a className="pp-btn ink" href={URLS.explainer} {...ext}>
+                  {t.expCta}
+                </a>
+              </div>
+              <div>
+                <div className="pp-media">
+                  <video controls playsInline preload="none" poster={`${EXPLAINER_DEMO}/poster0.jpg`} src={`${EXPLAINER_DEMO}/${zh ? 'zh' : 'en'}.mp4`} title={t.expCap} />
+                </div>
+                <p className="pp-media-cap">{t.expCap}</p>
+              </div>
+            </Reveal>
+            <Reveal className="pp-prod">
+              <div>
+                <p className="pp-kick">02</p>
+                <h3>{t.repName}</h3>
+                <p className="pp-p">{t.repText}</p>
+                <ul className="pp-facts">
+                  {t.repFacts.map((f) => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
+                <a className="pp-btn ink" href={replay(HERO_RUN)} {...ext}>
+                  {t.repCta}
+                </a>
+              </div>
+              <div className="pp-report">
+                <h4>{t.logA}</h4>
+                <blockquote>{t.logAText}</blockquote>
+                <hr />
+                <h4>{t.logB}</h4>
+                <blockquote>{t.logBText}</blockquote>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        <Benchmark t={t} lang={lang} />
+        <Runs t={t} />
+
+        <section id="rules" className="pp-rules-sec">
+          <Reveal>
+            <p className="pp-kick">{t.rulesKick}</p>
+            <h2 className="pp-h2">{t.rulesH}</h2>
+          </Reveal>
+          <Reveal delay={60}>
+            <div className="pp-rules">
+              {t.rules.map(([h, p], i) => (
+                <div className="pp-rule" key={h}>
+                  <span className="pp-kick">{String(i + 1).padStart(2, '0')}</span>
+                  <h3>{h}</h3>
+                  <p>{p}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </section>
+
+        <section id="tools" className="pp-tools-sec">
+          <Reveal>
+            <p className="pp-kick">{t.toolsKick}</p>
+            <h2 className="pp-h2">{t.toolsH}</h2>
+          </Reveal>
+          <Reveal delay={60}>
+            <ul className="pp-tools">
+              {SUPPORTING.map((s, i) => (
+                <li key={s.name}>
+                  <a href={s.url} {...ext}>
+                    <span className="ic" aria-hidden>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                        <path d={TOOL_ICONS[i]} />
+                      </svg>
+                    </span>
+                    <span>
+                      <b>{s.name}</b>
+                      <p>{s.line[lang]}</p>
+                    </span>
+                    <span className="kind">{t.kinds[i]}</span>
+                    <span className="sr-only">{copy.newTab}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </section>
+
+        <section id="faq" className="pp-faq-sec">
+          <h2 className="pp-h2" style={{ marginTop: 0 }}>
+            {t.faqH}
+          </h2>
+          <div className="pp-faq">
+            {t.faq.map(([q, a], i) => (
+              <details key={q} open={i === 0}>
+                <summary>{q}</summary>
+                <p>{a}</p>
+              </details>
             ))}
           </div>
         </section>
 
-        <Section id="supporting" title={t.supportTitle} sub={t.supportSub}>
-          <Supporting t={t} lang={lang} />
-        </Section>
-
-        <SuiteFaq lang={lang} id="faq" items={FAQ[lang]} />
-        <SuiteCta
-          title={lang === 'zh' ? '先读懂，再核验。' : 'Understand it first. Then check it.'}
-          body={lang === 'zh' ? '从一篇论文开始，约 40 秒得到视频。' : 'Start with one paper. Get a video in about 40 seconds.'}
-          label={t.explain}
-          href={URLS.explainer}
-        />
-
-        <Footer t={t} />
+        <section className="pp-close">
+          <h2>{t.closeH}</h2>
+          <div className="pp-cta">
+            <a className="pp-btn ink" href={URLS.explainer} {...ext}>
+              {t.explain}
+            </a>
+            <a className="pp-btn line" href={URLS.repro} {...ext}>
+              {t.check}
+            </a>
+          </div>
+        </section>
       </main>
+
+      <footer className="pp-foot">
+        <div className="pp-wrap pp-foot-in">
+          <div className="who">
+            <b>Repro Suite</b>
+            {t.tag} {copy.footTeam}
+          </div>
+          <nav aria-label={t.footApps}>
+            <h2>{t.footApps}</h2>
+            <ul>
+              <li>
+                <a href={URLS.explainer} {...ext}>
+                  Paper Explainer
+                </a>
+              </li>
+              <li>
+                <a href={URLS.repro} {...ext}>
+                  Paper Repro Agent
+                </a>
+              </li>
+            </ul>
+          </nav>
+          <nav aria-label={t.footTools}>
+            <h2>{t.footTools}</h2>
+            <ul>
+              {SUPPORTING.map((s) => (
+                <li key={s.name}>
+                  <a href={s.url} {...ext}>
+                    {s.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <nav aria-label={t.footResearch}>
+            <h2>{t.footResearch}</h2>
+            <ul>
+              <li>
+                <a href={URLS.benchmark} {...ext}>
+                  Benchmark
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </footer>
     </div>
   );
 }
