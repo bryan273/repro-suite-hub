@@ -119,6 +119,11 @@ export default function Console() {
   const [status, setStatus] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [amount, setAmount] = useState<Record<string, string>>({});
+  type Proof = { id: string; username: string; created_at: string; role: string; school: string; status: string; link: string };
+  const [proofs, setProofs] = useState<Proof[]>([]);
+  const loadProofs = useCallback(async () => {
+    try { setProofs(((await call('explainer-admin', { method: 'POST', body: JSON.stringify({ op: 'verify_list' }) })) as { items: Proof[] }).items); } catch { /* shown as empty */ }
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
@@ -150,7 +155,8 @@ export default function Console() {
   }, []);
   useEffect(() => {
     load();
-    const on = () => load();
+    loadProofs();
+    const on = () => { load(); loadProofs(); };
     window.addEventListener('suite-auth', on);
     return () => window.removeEventListener('suite-auth', on);
   }, [load]);
@@ -194,6 +200,30 @@ export default function Console() {
               <div className="cs-tile"><span>Credits held</span><b>{num(data.totals.credits)}</b></div>
               <div className="cs-tile"><span>Active plans</span><b>{(data as unknown as { active_plans?: number }).active_plans ?? 0}</b></div>
               <div className="cs-tile"><span>Banned</span><b>{data.totals.banned}</b></div>
+            </div>
+
+            <h2>Student and teacher proofs{proofs.some((x) => x.status === 'pending') ? ` (${proofs.filter((x) => x.status === 'pending').length} waiting)` : ''}</h2>
+            <div className="cs-wrap">
+              {proofs.length === 0 ? <p className="cs-note sub">No proofs sent yet.</p> : (
+                <table>
+                  <thead><tr><th>Email</th><th>Who</th><th>School</th><th>Sent</th><th>Proof</th><th>Status</th><th>Decision</th></tr></thead>
+                  <tbody>
+                    {proofs.map((x) => (
+                      <tr key={x.id}>
+                        <td>{x.username}</td><td>{x.role}</td><td>{x.school || <span className="cs-dim">none</span>}</td><td>{fmt(x.created_at)}</td>
+                        <td>{x.link ? <a href={x.link} target="_blank" rel="noopener noreferrer">Open file</a> : <span className="cs-dim">missing</span>}</td>
+                        <td>{x.status}</td>
+                        <td>{x.status === 'pending' ? (
+                          <>
+                            <button type="button" className="cs-btn sm" onClick={async () => { await call('explainer-admin', { method: 'POST', body: JSON.stringify({ op: 'verify_decide', id: x.id, approve: true }) }).catch((e) => setErr(String(e.message))); loadProofs(); load(); }}>Approve 1 month</button>{' '}
+                            <button type="button" className="cs-btn sm" onClick={async () => { await call('explainer-admin', { method: 'POST', body: JSON.stringify({ op: 'verify_decide', id: x.id, approve: false }) }).catch((e) => setErr(String(e.message))); loadProofs(); }}>Reject</button>
+                          </>
+                        ) : <span className="cs-dim">done</span>}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
 
             <h2>Apps</h2>
