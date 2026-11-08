@@ -8,7 +8,7 @@ const LANG_KEY = 'rs-lang';
 
 type Stat = { k: string; v: number };
 type App = { id: string; title: string; href: string; stats: Stat[] };
-type UserRow = { id: string; username: string; credits: number; banned: boolean; created_at: string; last_login: string | null; jobs: number };
+type UserRow = { id: string; username: string; credits: number; banned: boolean; created_at: string; last_login: string | null; jobs: number; plan?: string | null; plan_until?: string | null };
 type Job = { id: string; arxiv: string | null; title: string | null; status: string; stage: string | null; seconds: number | null; langs: string | null; cost_usd: number | null; error: string | null; created_at: string };
 type Repro = { id: string; arxiv_id: string; title: string | null; lang: string | null; status: string; verdict: string | null; agent: string | null; model: string | null; created_at: string };
 type Order = { id: string; email: string; arxiv: string; status: string; pay_method: string | null; created_at: string };
@@ -187,6 +187,7 @@ export default function Console() {
               <div className="cs-tile"><span>Members</span><b>{data.totals.users}</b></div>
               <div className="cs-tile"><span>New this week</span><b>{data.totals.signups_7d}</b></div>
               <div className="cs-tile"><span>Credits held</span><b>{num(data.totals.credits)}</b></div>
+              <div className="cs-tile"><span>Active plans</span><b>{(data as unknown as { active_plans?: number }).active_plans ?? 0}</b></div>
               <div className="cs-tile"><span>Banned</span><b>{data.totals.banned}</b></div>
             </div>
 
@@ -224,11 +225,19 @@ export default function Console() {
             <h2>Members</h2>
             <div className="cs-wrap">
               <table>
-                <thead><tr><th>Email</th><th>Credits</th><th>Videos</th><th>Joined</th><th>Last login</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Email</th><th>Plan</th><th>Credits</th><th>Videos</th><th>Joined</th><th>Last login</th><th>Actions</th></tr></thead>
                 <tbody>
                   {data.users.map((u) => (
                     <tr key={u.id}>
                       <td>{u.username}{u.banned && <> {pill('banned')}</>}</td>
+                      <td>{(() => {
+                        if (!u.plan_until) return <span className="cs-dim">Free</span>;
+                        const days = Math.ceil((new Date(u.plan_until).getTime() - Date.now()) / 86400000);
+                        const label = u.plan ? u.plan[0].toUpperCase() + u.plan.slice(1) : 'Plan';
+                        return days > 0
+                          ? <span style={{ color: days <= 7 ? '#c0392b' : undefined }}>{label} · {days} day{days === 1 ? '' : 's'} left <small>(due {fmt(u.plan_until)})</small></span>
+                          : <span className="cs-dim">{label} expired {fmt(u.plan_until)}</span>;
+                      })()}</td>
                       <td>{u.credits}</td>
                       <td>{u.jobs}</td>
                       <td>{fmt(u.created_at)}</td>
