@@ -11,7 +11,7 @@ type App = { id: string; title: string; href: string; stats: Stat[] };
 type UserRow = { id: string; username: string; credits: number; banned: boolean; created_at: string; last_login: string | null; jobs: number; plan?: string | null; plan_until?: string | null };
 type Job = { id: string; arxiv: string | null; title: string | null; status: string; stage: string | null; seconds: number | null; langs: string | null; cost_usd: number | null; error: string | null; created_at: string };
 type Repro = { id: string; arxiv_id: string; title: string | null; lang: string | null; status: string; verdict: string | null; agent: string | null; model: string | null; created_at: string };
-type Order = { id: string; email: string; arxiv: string; status: string; pay_method: string | null; created_at: string };
+type Order = { id: string; email: string; arxiv: string; status: string; pay_method: string | null; notes?: string | null; created_at: string };
 type Feedback = { id: string; rating: number | null; comment: string; kind: string; arxiv: string; created_at: string };
 type Board = { slug: string; title: string; updated_at: string };
 type Request = { id: string; created_at: string; data: Record<string, unknown> };
@@ -567,8 +567,26 @@ export default function Console() {
                 <div className="cs-wrap">
                   {data.orders.length === 0 ? <p className="cs-note sub">No orders.</p> : (
                     <table>
-                      <thead><tr><th>Email</th><th>Paper</th><th>Status</th><th>When</th></tr></thead>
-                      <tbody>{oP.rows.map((o) => <tr key={o.id}><td>{o.email}</td><td>{o.arxiv}</td><td>{pill(o.status)}</td><td>{fmt(o.created_at)}</td></tr>)}</tbody>
+                      <thead><tr><th>Who</th><th>Order</th><th>Amount</th><th>Status</th><th>When</th><th>Decision</th></tr></thead>
+                      <tbody>{oP.rows.map((o) => {
+                        const n = o.notes ?? '';
+                        const cur = /cur:([a-z]+)/.exec(n)?.[1] ?? 'cny';
+                        const amt = Number(/amt:(\d+)/.exec(n)?.[1] ?? /price:(\d+)/.exec(n)?.[1] ?? 0);
+                        const money = amt ? (cur === 'vnd' ? `${amt.toLocaleString('vi-VN')} VND` : cur === 'idr' ? `Rp ${amt.toLocaleString('id-ID')}` : `¥${amt}`) : '';
+                        const open = o.status === 'new' || o.status === 'paid_claimed';
+                        return (
+                          <tr key={o.id}>
+                            <td>{o.email}</td><td>{o.arxiv}<div className="sub" style={{ fontSize: 12 }}>{o.id.slice(0, 8)}{o.pay_method ? ` · ${o.pay_method}` : ''}</div></td>
+                            <td>{money}</td><td>{pill(o.status)}</td><td>{fmt(o.created_at)}</td>
+                            <td style={{ whiteSpace: 'nowrap' }}>{open ? (
+                              <>
+                                <button type="button" className="cs-btn sm" onClick={() => act({ op: 'order_status', id: o.id, status: 'paid' })}>Mark paid</button>{' '}
+                                <button type="button" className="cs-btn sm" onClick={() => act({ op: 'order_status', id: o.id, status: 'cancelled' })}>Cancel</button>
+                              </>
+                            ) : <span className="cs-dim">{o.status}</span>}</td>
+                          </tr>
+                        );
+                      })}</tbody>
                     </table>
                   )}
                   <Pager p={oP} />
