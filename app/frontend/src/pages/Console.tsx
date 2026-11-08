@@ -112,7 +112,9 @@ export default function Console() {
   const [lang, setLang] = useState<'en' | 'zh'>(() => {
     try { return localStorage.getItem(LANG_KEY) === 'zh' ? 'zh' : 'en'; } catch { return 'en'; }
   });
-  const [data, setData] = useState<Data | null>(null);
+  const [data, setData] = useState<Data | null>(() => {   // last look first, fresh numbers a moment later
+    try { const c = token() ? localStorage.getItem('pe-admin-cache') : null; return c ? (JSON.parse(c) as Data) : null; } catch { return null; }
+  });
   const [err, setErr] = useState('');
   const [status, setStatus] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -133,11 +135,14 @@ export default function Console() {
     setBusy(true);
     setErr('');
     try {
-      setData(await call('suite-admin'));
+      const d = (await call('suite-admin')) as Data;
+      setData(d);
       setStatus(200);
+      try { localStorage.setItem('pe-admin-cache', JSON.stringify(d)); } catch { /* full or private */ }
     } catch (e) {
-      setData(null);
-      setStatus((e as { status?: number }).status ?? 0);
+      const st = (e as { status?: number }).status ?? 0;
+      if (st === 401 || st === 403) { setData(null); try { localStorage.removeItem('pe-admin-cache'); } catch { /* ignore */ } }   // a network failure keeps the last look
+      setStatus(st);
       setErr((e as Error).message);
     } finally {
       setBusy(false);
