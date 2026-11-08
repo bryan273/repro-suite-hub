@@ -151,6 +151,12 @@ function read<T extends string>(key: string, allowed: readonly T[], fallback: T)
   }
 }
 
+const FT: Record<Lang, { explore: string; examples: string; pricing: string; about: string; terms: string; privacy: string; contact: string }> = {
+  en: { explore: 'Explore', examples: 'Examples', pricing: 'Pricing', about: 'About', terms: 'Terms', privacy: 'Privacy', contact: 'Contact' },
+  zh: { explore: '探索', examples: '示例', pricing: '价格', about: '关于', terms: '条款', privacy: '隐私', contact: '联系我们' },
+  vi: { explore: 'Khám phá', examples: 'Ví dụ', pricing: 'Bảng giá', about: 'Giới thiệu', terms: 'Điều khoản', privacy: 'Quyền riêng tư', contact: 'Liên hệ' },
+  id: { explore: 'Jelajahi', examples: 'Contoh', pricing: 'Harga', about: 'Tentang', terms: 'Ketentuan', privacy: 'Privasi', contact: 'Kontak' },
+};
 const HREF = [URLS.explainer, URLS.reading, URLS.repro];
 const SHOT_KEYS = [SHOTS.explainer, SHOTS.reading, SHOTS.repro];
 const NAMES = ['Explain', 'Read', 'Reproduce'];
@@ -273,13 +279,13 @@ export default function Index() {
             <p className="mt-1 max-w-[30ch]">{t.title}</p>
           </div>
           {[
-            { h: 'Apps', l: [['Learn by video', HREF[0]], ['Read and ask', HREF[1]], ['Check the result', HREF[2]]] },
-            { h: 'Explore', l: [['Examples', `${HREF[0]}#examples`], ['Pricing', `${HREF[0]}#pricing`], ['FAQ', '#faq']] },
-            { h: 'Paperlit', l: [['Terms', `${HREF[0]}/terms`], ['Privacy', `${HREF[0]}/privacy`], ['Contact', `${HREF[0]}#contact`]] },
+            { h: 'Paperlit', l: [[t.products[0].name, HREF[0]], [t.products[1].name, HREF[1]], [t.products[2].name, HREF[2]]] },
+            { h: FT[lang].explore, l: [[FT[lang].examples, `${HREF[0]}#examples`], [FT[lang].pricing, `${HREF[0]}#pricing`], ['FAQ', '#faq']] },
+            { h: FT[lang].about, l: [[FT[lang].terms, `${HREF[0]}/terms`], [FT[lang].privacy, `${HREF[0]}/privacy`], [FT[lang].contact, `${HREF[0]}#contact`]] },
           ].map((c) => (
             <nav key={c.h} className="grid content-start gap-2" aria-label={String(c.h)}>
               <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'inherit' }}>{c.h}</p>
-              {c.l.map(([n, h]) => <a key={n} href={h} className="no-underline hover:underline" style={{ color: 'inherit' }}>{n}</a>)}
+              {c.l.map(([n, h]) => <a key={n} href={h} className="inline-block py-1.5 no-underline hover:underline" style={{ color: 'inherit' }}>{n}</a>)}
             </nav>
           ))}
         </footer>
