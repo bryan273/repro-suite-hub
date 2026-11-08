@@ -7,6 +7,7 @@ import Index from './pages/Index';
 import NotFound from './components/NotFound';
 import AuthCallback from './pages/AuthCallback';
 import AuthError from './pages/AuthError';
+import Console from './pages/Console';
 // MODULE_IMPORTS_START
 // MODULE_IMPORTS_END
 
@@ -16,6 +17,7 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     {/* <Route path="/blog/*" element={<BlogRoutes />} /> */}
+    <Route path="/console" element={<Console />} />
     <Route path="/auth/callback" element={<AuthCallback />} />
     <Route path="/auth/error" element={<AuthError />} />
     <Route path="*" element={<NotFound appId="hub" />} />
