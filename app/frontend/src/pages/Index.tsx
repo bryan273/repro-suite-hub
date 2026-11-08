@@ -160,7 +160,7 @@ export default function Index() {
     const nav = (navigator.language || '').toLowerCase();
     return nav.startsWith('zh') ? 'zh' : nav.startsWith('vi') ? 'vi' : nav.startsWith('id') ? 'id' : 'en';
   })() as Lang;
-  const [lang, setLang] = useState<Lang>(() => read(LANG_KEY, LANGS, initial));
+  const [lang, setLang] = useState<Lang>(() => read('suite-lang', LANGS, read(LANG_KEY, LANGS, initial)));
   const [theme, setTheme] = useState<Theme>(() => read(THEME_KEY, ['light', 'dark'], window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
   const t = S[lang];
 
@@ -170,7 +170,7 @@ export default function Index() {
   }, [theme]);
   useEffect(() => {
     document.documentElement.lang = HTML_LANG[lang];
-    try { localStorage.setItem(LANG_KEY, lang); } catch { /* private mode */ }
+    try { localStorage.setItem(LANG_KEY, lang); localStorage.setItem('suite-lang', lang); } catch { /* private mode */ }
   }, [lang]);
 
   const nav = [
