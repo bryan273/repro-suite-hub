@@ -176,7 +176,7 @@ const css = `
 .cs-tally{position:relative;display:flex;justify-content:space-between;gap:10px;padding:7px 14px;font-size:13.5px}.cs-tally i{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);opacity:.55}.cs-tally b{font-variant-numeric:tabular-nums}
 .cs-chart-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:28px 0 10px}.cs-filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.cs-chip{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:4px 11px;font:600 12px inherit;cursor:pointer}.cs-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}.cs-chip.chk{display:inline-flex;gap:5px;align-items:center}.cs-chip.chk input{margin:0}.cs-sep{width:1px;height:18px;background:var(--line);margin:0 4px}.cs-pager{display:flex;gap:6px;align-items:center;justify-content:flex-end;padding:8px 12px;font-size:12.5px}
 .cs-vers{display:grid}.cs-ver{border-top:1px solid var(--line);padding:10px 14px}.cs-ver:first-child{border-top:0}.cs-ver summary{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;cursor:pointer;font-size:14px}.cs-vtag{background:var(--accent);color:#fff;border-radius:999px;padding:1px 9px;font:700 12px inherit}.cs-rel{margin:10px 0 4px;padding-left:0;list-style:none;display:grid;gap:12px}.cs-rel-h{display:flex;gap:12px;align-items:baseline;font-size:13px}.cs-rel ul{margin:4px 0 0 18px;padding:0;font-size:13px;color:var(--muted,#666)}
-.cs-btn.sm{padding:4px 10px;font-size:12px}
+.cs-modal{position:fixed;inset:0;z-index:100;background:rgba(8,10,24,.6);display:grid;place-items:center;padding:16px}.cs-modal-box{width:min(920px,100%);max-height:92vh;display:grid;grid-template-rows:auto 1fr auto;background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 30px 70px -20px rgba(0,0,0,.55)}.cs-modal-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:14px 18px;border-bottom:1px solid var(--line)}.cs-modal-view{overflow:auto;background:rgba(0,0,0,.04);display:grid;place-items:center;min-height:240px}.cs-modal-view img{max-width:100%;max-height:68vh;display:block}.cs-modal-view iframe{width:100%;height:68vh;border:0}.cs-modal-f{display:flex;gap:10px;flex-wrap:wrap;padding:12px 18px;border-top:1px solid var(--line);align-items:center}\n.cs-btn.sm{padding:4px 10px;font-size:12px}
 .cs-tot{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:20px}
 .cs-tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
 .cs-tile span{display:block;font-size:12px;color:var(--text2)}
@@ -227,7 +227,38 @@ export default function Console() {
   const [status, setStatus] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [amount, setAmount] = useState<Record<string, string>>({});
-  type Proof = { id: string; username: string; created_at: string; role: string; school: string; status: string; link: string };
+  type Proof = { id: string | number; username: string; created_at: string; role: string; school: string; status: string; link: string };
+  type Viewing = { kind: 'proof' | 'shot'; id: string | number; title: string; sub: string; order?: Order; proof?: Proof };
+  const [viewing, setViewing] = useState<Viewing | null>(null);
+  const [fileUrl, setFileUrl] = useState('');
+  const [fileType, setFileType] = useState('');
+  const [fileErr, setFileErr] = useState('');
+  const [fileBusy, setFileBusy] = useState(false);
+  const closeViewer = () => { setViewing(null); if (fileUrl) URL.revokeObjectURL(fileUrl); setFileUrl(''); setFileType(''); setFileErr(''); };
+  /** Opens a proof or a payment screenshot inside the page: the file is read with the admin sign-in and shown as a picture. */
+  const openFile = async (v: Viewing) => {
+    setViewing(v); setFileUrl(''); setFileErr(''); setFileBusy(true);
+    try {
+      const res = await fetch(`${SB}/explainer-admin?${v.kind === 'proof' ? 'proof' : 'shot'}=${encodeURIComponent(String(v.id))}`, { headers: { 'x-session': token() } });
+      if (!res.ok) { const j = await res.json().catch(() => ({})); throw new Error(String((j as { error?: string }).error ?? `HTTP ${res.status}`)); }
+      const blob = await res.blob();
+      setFileType(blob.type); setFileUrl(URL.createObjectURL(blob));
+    } catch (e) { setFileErr((e as Error).message); } finally { setFileBusy(false); }
+  };
+  const decide = async (id: string | number, approve: boolean) => {
+    setFileErr('');
+    try {
+      await call('explainer-admin', { method: 'POST', body: JSON.stringify({ op: 'verify_decide', id, approve }) });
+      closeViewer(); await loadProofs(); await load();
+    } catch (e) { setFileErr((e as Error).message); }
+  };
+  const orderDecide = async (id: string, status: 'paid' | 'cancelled') => {
+    setFileErr('');
+    try {
+      await call('explainer-admin', { method: 'POST', body: JSON.stringify({ op: 'order_status', id, status }) });
+      closeViewer(); await load();
+    } catch (e) { setFileErr((e as Error).message); }
+  };
   const versions = useVersions();
   const releases = useReleases();
   const [range, setRange] = useState(14);
@@ -417,14 +448,9 @@ export default function Console() {
                     {proofs.map((x) => (
                       <tr key={x.id}>
                         <td>{x.username}</td><td>{x.role}</td><td>{x.school || <span className="cs-dim">none</span>}</td><td>{fmt(x.created_at)}</td>
-                        <td>{x.link ? <a href={x.link} target="_blank" rel="noopener noreferrer">Open file</a> : <span className="cs-dim">missing</span>}</td>
+                        <td><button type="button" className="cs-btn sm" onClick={() => openFile({ kind: 'proof', id: x.id, title: `${x.role === 'teacher' ? 'Teacher' : 'Student'} proof`, sub: `${x.username} · ${x.school || 'no school given'} · ${fmt(x.created_at)}`, proof: x })}>View proof</button></td>
                         <td>{x.status}</td>
-                        <td>{x.status === 'pending' ? (
-                          <>
-                            <button type="button" className="cs-btn sm" onClick={async () => { await call('explainer-admin', { method: 'POST', body: JSON.stringify({ op: 'verify_decide', id: x.id, approve: true }) }).catch((e) => setErr(String(e.message))); loadProofs(); load(); }}>Approve 1 month</button>{' '}
-                            <button type="button" className="cs-btn sm" onClick={async () => { await call('explainer-admin', { method: 'POST', body: JSON.stringify({ op: 'verify_decide', id: x.id, approve: false }) }).catch((e) => setErr(String(e.message))); loadProofs(); }}>Reject</button>
-                          </>
-                        ) : <span className="cs-dim">done</span>}</td>
+                        <td>{x.status === 'pending' ? <button type="button" className="cs-btn sm" onClick={() => openFile({ kind: 'proof', id: x.id, title: `${x.role === 'teacher' ? 'Teacher' : 'Student'} proof`, sub: `${x.username} · ${x.school || 'no school given'} · ${fmt(x.created_at)}`, proof: x })}>Review</button> : <span className="cs-dim">done</span>}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -580,6 +606,7 @@ export default function Console() {
                             <td>{money}</td><td>{pill(o.status)}</td><td>{fmt(o.created_at)}</td>
                             <td style={{ whiteSpace: 'nowrap' }}>{open ? (
                               <>
+                                {/shot:/.test(n) && <><button type="button" className="cs-btn sm" onClick={() => openFile({ kind: 'shot', id: o.id, title: 'Payment screenshot', sub: `${o.email} · ${money} · ${o.id.slice(0, 8)}`, order: o })}>View payment</button>{' '}</>}
                                 <button type="button" className="cs-btn sm" onClick={() => act({ op: 'order_status', id: o.id, status: 'paid' })}>Mark paid</button>{' '}
                                 <button type="button" className="cs-btn sm" onClick={() => act({ op: 'order_status', id: o.id, status: 'cancelled' })}>Cancel</button>
                               </>
@@ -630,6 +657,37 @@ export default function Console() {
               </div>
             </div>
           </>
+        )}
+        {viewing && (
+          <div className="cs-modal" role="dialog" aria-modal="true" aria-label={viewing.title} onClick={(e) => { if (e.target === e.currentTarget) closeViewer(); }}>
+            <div className="cs-modal-box">
+              <div className="cs-modal-h">
+                <div><b>{viewing.title}</b><div className="cs-dim" style={{ fontSize: 13 }}>{viewing.sub}</div></div>
+                <button type="button" className="cs-btn sm" onClick={closeViewer}>Close</button>
+              </div>
+              <div className="cs-modal-view">
+                {fileBusy && <p className="cs-note">Opening the file…</p>}
+                {fileErr && <p className="cs-err" role="alert">{fileErr}</p>}
+                {fileUrl && fileType.startsWith('image/') && <img src={fileUrl} alt={viewing.title} />}
+                {fileUrl && fileType === 'application/pdf' && <iframe src={fileUrl} title={viewing.title} />}
+              </div>
+              <div className="cs-modal-f">
+                {fileUrl && <a className="cs-btn sm" href={fileUrl} download={`${viewing.kind}-${viewing.id}.${fileType === 'application/pdf' ? 'pdf' : fileType.replace('image/', '') || 'bin'}`}>Download</a>}
+                {viewing.kind === 'proof' && viewing.proof?.status === 'pending' && (
+                  <>
+                    <button type="button" className="cs-btn" onClick={() => decide(viewing.id, true)}>Approve: 1 month of Plus</button>
+                    <button type="button" className="cs-btn" onClick={() => decide(viewing.id, false)}>Reject</button>
+                  </>
+                )}
+                {viewing.kind === 'shot' && viewing.order && (
+                  <>
+                    <button type="button" className="cs-btn" onClick={() => orderDecide(viewing.order!.id, 'paid')}>Mark paid</button>
+                    <button type="button" className="cs-btn" onClick={() => orderDecide(viewing.order!.id, 'cancelled')}>Cancel order</button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </main>
     </div>
