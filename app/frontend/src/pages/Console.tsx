@@ -204,6 +204,7 @@ export default function Console() {
     if (mplan === 'free' && active) return false;
     if (mplan === 'plus' && !(active && m.plan === 'plus')) return false;
     if (mplan === 'pro' && !(active && m.plan === 'pro')) return false;
+    if (mplan === 'premium' && !(active && m.plan === 'premium')) return false;
     if (mplan === 'expiring' && !(active && Date.parse(m.plan_until!) - Date.now() < 7 * 86400000)) return false;
     if (mcountry !== 'all' && m.country !== mcountry) return false;
     if (mstate === 'banned' && !m.banned) return false;
@@ -403,7 +404,7 @@ export default function Console() {
                 <h2>All members</h2>
                 <div className="cs-filters">
                   <input className="cs-search" placeholder="Search username or email" value={mq} onChange={(e) => setMq(e.target.value)} />
-                  <select value={mplan} onChange={(e) => setMplan(e.target.value)}><option value="all">Any plan</option><option value="free">Free</option><option value="plus">Plus</option><option value="pro">Pro</option><option value="expiring">Plan ends within 7 days</option></select>
+                  <select value={mplan} onChange={(e) => setMplan(e.target.value)}><option value="all">Any plan</option><option value="free">Free</option><option value="plus">Plus</option><option value="pro">Pro</option><option value="premium">Premium</option><option value="expiring">Plan ends within 7 days</option></select>
                   <select value={mcountry} onChange={(e) => setMcountry(e.target.value)}><option value="all">Any country</option>{[...new Set(data.members.map((m) => m.country).filter(Boolean))].sort().map((c) => <option key={c} value={c}>{country(c)}</option>)}</select>
                   <select value={mstate} onChange={(e) => setMstate(e.target.value)}><option value="all">Everyone</option><option value="new">Joined in period</option><option value="active">Signed in during period</option><option value="banned">Banned</option></select>
                 </div>
