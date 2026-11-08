@@ -522,7 +522,7 @@ export default function Console() {
                 <tbody>
                   {uP.rows.map((u) => (
                     <tr key={u.id}>
-                      <td>{u.username}{u.banned && <> {pill('banned')}</>}</td>
+                      <td>{(u as unknown as { handle?: string | null }).handle ? <b>{(u as unknown as { handle?: string | null }).handle} </b> : null}<span className="cs-dim">{u.username}</span>{u.banned && <> {pill('banned')}</>}</td>
                       <td>{(() => {
                         if (!u.plan_until) return <span className="cs-dim">Free</span>;
                         const days = Math.ceil((new Date(u.plan_until).getTime() - Date.now()) / 86400000);
