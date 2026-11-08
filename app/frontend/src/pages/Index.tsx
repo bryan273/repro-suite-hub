@@ -309,7 +309,7 @@ export default function Index() {
         dark={theme === 'dark'}
         onToggleDark={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         lang={lang}
-        onLang={setLang}
+        onLang={(l) => setLang(l as Lang)}
       />
 
       <main id="top" className="mx-auto w-full max-w-[1160px] px-5 sm:px-8">

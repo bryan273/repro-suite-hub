@@ -164,7 +164,7 @@ export default function Console() {
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
       <style>{css}</style>
-      <SuiteTopBar appId="hub" brand="Repro Suite" letter="R" homeTo="/" nav={[]} dark={theme === 'dark'} onToggleDark={() => setTheme(theme === 'dark' ? 'light' : 'dark')} lang={lang} onLang={setLang} />
+      <SuiteTopBar appId="hub" brand="Repro Suite" letter="R" homeTo="/" nav={[]} dark={theme === 'dark'} onToggleDark={() => setTheme(theme === 'dark' ? 'light' : 'dark')} lang={lang} onLang={(l) => setLang(l as 'en' | 'zh')} />
       <main className="cs">
         <div className="cs-head">
           <div>
