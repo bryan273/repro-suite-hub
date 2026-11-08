@@ -267,10 +267,21 @@ export default function Index() {
           </div>
         </section>
 
-        <footer className={`mt-14 border-t border-[color:var(--line)] py-8 text-[13px] ${text2}`}>
-          <p className="font-bold text-[15px]" style={{ color: 'inherit' }}>Paperlit</p>
-          <p>{t.team}</p>
-          <p>{t.partners}</p>
+        <footer className={`mt-14 grid gap-8 border-t border-[color:var(--line)] py-10 text-[14px] sm:grid-cols-[1.4fr_1fr_1fr_1fr] ${text2}`}>
+          <div>
+            <p className="font-bold text-[16px]" style={{ color: 'inherit' }}>Paperlit</p>
+            <p className="mt-1 max-w-[30ch]">{t.hero}</p>
+          </div>
+          {[
+            { h: 'Apps', l: [['Learn by video', HREF[0]], ['Read and ask', HREF[1]], ['Check the result', HREF[2]]] },
+            { h: 'Explore', l: [['Examples', `${HREF[0]}#examples`], ['Pricing', `${HREF[0]}#pricing`], ['FAQ', '#faq']] },
+            { h: 'Paperlit', l: [['Terms', `${HREF[0]}/terms`], ['Privacy', `${HREF[0]}/privacy`], ['Contact', `${HREF[0]}#contact`]] },
+          ].map((c) => (
+            <nav key={c.h} className="grid content-start gap-2" aria-label={String(c.h)}>
+              <p className="text-[12px] font-semibold uppercase tracking-wide" style={{ color: 'inherit' }}>{c.h}</p>
+              {c.l.map(([n, h]) => <a key={n} href={h} className="no-underline hover:underline" style={{ color: 'inherit' }}>{n}</a>)}
+            </nav>
+          ))}
         </footer>
       </main>
     </div>
