@@ -126,7 +126,7 @@ export default function Console() {
     try { localStorage.setItem(LANG_KEY, lang); } catch { /* ignore */ }
   }, [lang]);
   useEffect(() => {
-    document.title = 'Admin · Repro Suite';
+    document.title = 'Admin · Paperlit';
   }, []);
 
   const load = useCallback(async () => {
@@ -164,7 +164,7 @@ export default function Console() {
   return (
     <div className="min-h-screen w-full overflow-x-hidden">
       <style>{css}</style>
-      <SuiteTopBar appId="hub" brand="Repro Suite" letter="R" homeTo="/" nav={[]} dark={theme === 'dark'} onToggleDark={() => setTheme(theme === 'dark' ? 'light' : 'dark')} lang={lang} onLang={(l) => setLang(l as 'en' | 'zh')} />
+      <SuiteTopBar appId="hub" brand="Paperlit" letter="R" homeTo="/" nav={[]} dark={theme === 'dark'} onToggleDark={() => setTheme(theme === 'dark' ? 'light' : 'dark')} lang={lang} onLang={(l) => setLang(l as 'en' | 'zh')} />
       <main className="cs">
         <div className="cs-head">
           <div>

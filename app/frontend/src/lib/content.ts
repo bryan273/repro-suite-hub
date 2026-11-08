@@ -111,7 +111,7 @@ export const COPY = {
     themeToDark: 'Switch to dark mode',
     themeToLight: 'Switch to light mode',
     langLabel: 'Language',
-    eyebrow: 'Repro Suite',
+    eyebrow: 'Paperlit',
     heroTitle: 'Learn a paper. Then check it.',
     heroSub:
       'Two tools for AI research papers: a short narrated video that explains the paper, and an agent that re-runs the experiment and tells you whether the number holds.',
@@ -147,7 +147,7 @@ export const COPY = {
     themeToDark: '切换到深色模式',
     themeToLight: '切换到浅色模式',
     langLabel: '语言',
-    eyebrow: 'Repro Suite',
+    eyebrow: 'Paperlit',
     heroTitle: '先读懂论文，再检验它。',
     heroSub:
       '两款面向 AI 研究论文的工具：一段讲解论文的简短配音视频，以及一个重新运行实验、告诉你数字是否站得住的智能体。',
