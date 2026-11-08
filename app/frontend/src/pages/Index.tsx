@@ -151,11 +151,11 @@ function read<T extends string>(key: string, allowed: readonly T[], fallback: T)
   }
 }
 
-const FT: Record<Lang, { explore: string; examples: string; pricing: string; about: string; terms: string; privacy: string; contact: string }> = {
-  en: { explore: 'Explore', examples: 'Examples', pricing: 'Pricing', about: 'About', terms: 'Terms', privacy: 'Privacy', contact: 'Contact' },
-  zh: { explore: '探索', examples: '示例', pricing: '价格', about: '关于', terms: '条款', privacy: '隐私', contact: '联系我们' },
-  vi: { explore: 'Khám phá', examples: 'Ví dụ', pricing: 'Bảng giá', about: 'Giới thiệu', terms: 'Điều khoản', privacy: 'Quyền riêng tư', contact: 'Liên hệ' },
-  id: { explore: 'Jelajahi', examples: 'Contoh', pricing: 'Harga', about: 'Tentang', terms: 'Ketentuan', privacy: 'Privasi', contact: 'Kontak' },
+const FT: Record<Lang, { explore: string; examples: string; pricing: string; about: string; terms: string; privacy: string; contact: string; rights: string }> = {
+  en: { explore: 'Explore', examples: 'Examples', pricing: 'Pricing', about: 'About', terms: 'Terms', privacy: 'Privacy', contact: 'Contact', rights: 'All rights reserved.' },
+  zh: { explore: '探索', examples: '示例', pricing: '价格', about: '关于', terms: '条款', privacy: '隐私', contact: '联系我们', rights: '版权所有。' },
+  vi: { explore: 'Khám phá', examples: 'Ví dụ', pricing: 'Bảng giá', about: 'Giới thiệu', terms: 'Điều khoản', privacy: 'Quyền riêng tư', contact: 'Liên hệ', rights: 'Bảo lưu mọi quyền.' },
+  id: { explore: 'Jelajahi', examples: 'Contoh', pricing: 'Harga', about: 'Tentang', terms: 'Ketentuan', privacy: 'Privasi', contact: 'Kontak', rights: 'Hak cipta dilindungi.' },
 };
 const HREF = [URLS.explainer, URLS.reading, URLS.repro];
 const SHOT_KEYS = [SHOTS.explainer, SHOTS.reading, SHOTS.repro];
@@ -288,6 +288,7 @@ export default function Index() {
               {c.l.map(([n, h]) => <a key={n} href={h} className="inline-block py-1.5 no-underline hover:underline" style={{ color: 'inherit' }}>{n}</a>)}
             </nav>
           ))}
+          <p className="sm:col-span-4 border-t border-[color:var(--line)] pt-5 text-[13px]" style={{ color: 'inherit' }}>&copy; {new Date().getFullYear()} Paperlit. {FT[lang].rights}</p>
         </footer>
       </main>
     </div>
