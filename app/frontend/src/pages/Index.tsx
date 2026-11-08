@@ -48,7 +48,7 @@ const S: Record<Lang, {
       { q: 'What can I drop in?', a: 'An arXiv link, a PDF link, a DOI, or a PDF from your computer.' },
       { q: 'Which languages?', a: 'English, 中文, Tiếng Việt and Bahasa Indonesia, for the page and for the video.' },
       { q: 'How do you stop the AI from inventing things?', a: 'Every quote and number in a video is matched against the paper text, and what does not match is removed.' },
-      { q: 'Is it free?', a: 'You can try it without signing up. A free account gets a video every day, and plans start at ¥33 a month for 30 videos.' },
+      { q: 'Is it free?', a: 'You can try it without signing up. A free account gets a video every day, and plans start at ¥33 a month for 99 videos.' },
     ],
     ctaTitle: 'Stop re-reading. Start understanding.', ctaBody: 'Drop in one paper. Free to try.', ctaLabel: 'Make my video',
     team: 'Group 1, Tsinghua SIGS AIID capstone', partners: 'Partners: DeepWisdom and StepFun', shot: (n) => `Screenshot of ${n}`,
@@ -77,7 +77,7 @@ const S: Record<Lang, {
       { q: '可以丢进什么？', a: 'arXiv 链接、PDF 链接、DOI，或你电脑里的 PDF。' },
       { q: '支持哪些语言？', a: '页面和视频都支持 English、中文、Tiếng Việt 和 Bahasa Indonesia。' },
       { q: '如何避免 AI 编造内容？', a: '视频中的每句引文和每个数字都会与论文原文比对，对不上的会被删除。' },
-      { q: '免费吗？', a: '无需注册即可试用。免费账号每天可做一个视频，套餐每月 ¥33 起，含 30 个视频。' },
+      { q: '免费吗？', a: '无需注册即可试用。免费账号每天可做一个视频，套餐每月 ¥33 起，含 99 个视频。' },
     ],
     ctaTitle: '别再反复啃，直接读懂。', ctaBody: '丢进一篇论文，免费试用。', ctaLabel: '制作我的视频',
     team: '清华 SIGS AIID 课程项目第 1 组', partners: '合作方：DeepWisdom 与 StepFun', shot: (n) => `${n} 截图`,
@@ -106,7 +106,7 @@ const S: Record<Lang, {
       { q: 'Tôi có thể thả gì vào?', a: 'Liên kết arXiv, liên kết PDF, DOI, hoặc tệp PDF từ máy tính của bạn.' },
       { q: 'Có những ngôn ngữ nào?', a: 'English, 中文, Tiếng Việt và Bahasa Indonesia, cho cả trang web lẫn video.' },
       { q: 'Làm sao ngăn AI bịa đặt?', a: 'Mọi trích dẫn và con số trong video đều được đối chiếu với văn bản bài báo, phần nào không khớp sẽ bị loại.' },
-      { q: 'Có miễn phí không?', a: 'Bạn có thể dùng thử mà không cần đăng ký. Tài khoản miễn phí có một video mỗi ngày, và các gói bắt đầu từ ¥33 mỗi tháng cho 30 video.' },
+      { q: 'Có miễn phí không?', a: 'Bạn có thể dùng thử mà không cần đăng ký. Tài khoản miễn phí có một video mỗi ngày, và các gói bắt đầu từ ¥33 mỗi tháng cho 99 video.' },
     ],
     ctaTitle: 'Đừng đọc đi đọc lại nữa. Hãy hiểu.', ctaBody: 'Thả một bài báo vào. Dùng thử miễn phí.', ctaLabel: 'Tạo video của tôi',
     team: 'Nhóm 1, đồ án AIID Tsinghua SIGS', partners: 'Đối tác: DeepWisdom và StepFun', shot: (n) => `Ảnh chụp màn hình ${n}`,
@@ -135,7 +135,7 @@ const S: Record<Lang, {
       { q: 'Apa yang bisa saya masukkan?', a: 'Tautan arXiv, tautan PDF, DOI, atau PDF dari komputer Anda.' },
       { q: 'Bahasa apa saja?', a: 'English, 中文, Tiếng Việt dan Bahasa Indonesia, untuk halaman maupun video.' },
       { q: 'Bagaimana AI dicegah mengarang?', a: 'Setiap kutipan dan angka di video dicocokkan dengan teks makalah, dan yang tidak cocok dibuang.' },
-      { q: 'Apakah gratis?', a: 'Anda bisa mencobanya tanpa mendaftar. Akun gratis mendapat satu video per hari, dan paket mulai dari ¥33 per bulan untuk 30 video.' },
+      { q: 'Apakah gratis?', a: 'Anda bisa mencobanya tanpa mendaftar. Akun gratis mendapat satu video per hari, dan paket mulai dari ¥33 per bulan untuk 99 video.' },
     ],
     ctaTitle: 'Berhenti membaca berulang. Mulai paham.', ctaBody: 'Masukkan satu makalah. Gratis dicoba.', ctaLabel: 'Buat video saya',
     team: 'Kelompok 1, proyek akhir AIID Tsinghua SIGS', partners: 'Mitra: DeepWisdom dan StepFun', shot: (n) => `Tangkapan layar ${n}`,
@@ -270,7 +270,7 @@ export default function Index() {
         <footer className={`mt-14 grid gap-8 border-t border-[color:var(--line)] py-10 text-[14px] sm:grid-cols-[1.4fr_1fr_1fr_1fr] ${text2}`}>
           <div>
             <p className="font-bold text-[16px]" style={{ color: 'inherit' }}>Paperlit</p>
-            <p className="mt-1 max-w-[30ch]">{t.hero}</p>
+            <p className="mt-1 max-w-[30ch]">{t.title}</p>
           </div>
           {[
             { h: 'Apps', l: [['Learn by video', HREF[0]], ['Read and ask', HREF[1]], ['Check the result', HREF[2]]] },

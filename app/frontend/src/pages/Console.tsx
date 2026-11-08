@@ -47,8 +47,13 @@ async function call(fn: string, init?: RequestInit) {
 type Money = { usd_cny: number; income_total: number; income_month: number; income_30d: number; cost_total: number; cost_month: number; cost_30d: number; orders_paid: number; by_kind: { k: string; n: number; cny: number }[]; days: { d: string; income: number; cost: number }[] };
 type Tally = { k: string; n: number }[];
 type Audience = { total: number; countries: Tally; ip_countries: Tally; langs: Tally; sources: Tally; roles: Tally };
-type Ver = { id: string; label: string; v: string; at: string; msg: string };
-const APPS: [string, string][] = [['hub', 'Landing page and admin'], ['explainer', 'Learn by video'], ['reading', 'Read and ask'], ['repro', 'Check the result'], ['lite', 'Quick check'], ['desk', 'Human check'], ['indexboard', 'Boards']];
+type Rel = { v: string; at: string; title: string; bullets: string[]; sha: string; url: string };
+type Ver = { id: string; label: string; repo: string; latest: string; at: string; list: Rel[] };
+// each app is published from its own repository; every change that reached main is one release, numbered 1.N in the order they landed
+const APPS: [string, string, string][] = [
+  ['hub', 'Landing page and admin', 'repro-suite-hub'], ['explainer', 'Learn by video', 'paper-explainer'], ['reading', 'Read and ask', 'reading-companion'],
+  ['backend', 'Backend, video pipeline and Check pages', 'paper-repro-agentv2'], ['lite', 'Quick check', 'repro-lite'], ['desk', 'Human check', 'repro-desk'], ['indexboard', 'Boards', 'indexboard'],
+];
 const yuan = (n: number) => `¥${(Math.round(n * 100) / 100).toLocaleString('en-GB')}`;
 const ago = (iso: string) => {
   const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
@@ -56,27 +61,48 @@ const ago = (iso: string) => {
 };
 const countryName = (c: string) => { try { return c.length === 2 ? new Intl.DisplayNames(['en'], { type: 'region' }).of(c) ?? c : c; } catch { return c; } };
 
-/** The version of each app is its number of published changes (1.N) and the time of the last one, read from the public publishing repo. */
+/** What a release says in a few bullets: the lines of its commit message, without the sign-off lines. */
+function bulletsOf(msg: string): { title: string; bullets: string[] } {
+  const [first, ...rest] = msg.split('\n');
+  const title = first.replace(/\s*\(#\d+\)\s*$/, '').trim();
+  const lines = rest.map((l) => l.replace(/^[-*\u2022]\s*/, '').trim()).filter((l) => l && !/^(co-authored-by|generated with|\ud83e\udd16)/i.test(l) && l !== title);
+  const bullets = lines.length ? lines : [];
+  return { title, bullets: bullets.slice(0, 8).map((l) => (l.length > 170 ? l.slice(0, 167) + '...' : l)) };
+}
+
+/** The release history of every app, read from the public repositories: version 1.N, when it landed and what it said. */
 function useVersions(): Ver[] | null {
-  const [v, setV] = useState<Ver[] | null>(() => { try { const c = sessionStorage.getItem('pe-versions'); return c ? (JSON.parse(c) as Ver[]) : null; } catch { return null; } });
+  const [v, setV] = useState<Ver[] | null>(() => { try { const c = JSON.parse(localStorage.getItem('pe-versions3') ?? 'null') as { at: number; v: Ver[] } | null; return c && Date.now() - c.at < 30 * 60000 ? c.v : null; } catch { return null; } });
   useEffect(() => {
+    if (v) return;   // seen in the last few minutes of this tab: the public API allows only so many calls
     let alive = true;
     (async () => {
-      const out: Ver[] = [];
-      for (const [id, label] of APPS) {
+      const got = await Promise.all(APPS.map(async ([id, label, repo]): Promise<Ver | null> => {
         try {
-          const r = await fetch(`https://api.github.com/repos/bryan273/repro-suite/commits?path=${id}&per_page=1`);
-          if (!r.ok) continue;
-          const last = /[?&]page=(\d+)>; rel="last"/.exec(r.headers.get('link') ?? '')?.[1];
-          const [c] = (await r.json()) as { commit: { author: { date: string }; message: string } }[];
-          if (c) out.push({ id, label, v: `1.${last ?? 1}`, at: c.commit.author.date, msg: c.commit.message.split('\n')[0].slice(0, 90) });
-        } catch { /* rate limited: keep what is cached */ }
-      }
-      if (alive && out.length) { setV(out); try { sessionStorage.setItem('pe-versions', JSON.stringify(out)); } catch { /* ignore */ } }
+          const list = await fetch(`https://api.github.com/repos/bryan273/${repo}/commits?sha=main&per_page=25`);
+          if (!list.ok) return null;
+          const commits = (await list.json()) as { sha: string; html_url: string; commit: { author: { date: string }; message: string } }[];
+          const rels: Rel[] = commits.map((c, i) => ({ v: c.sha.slice(0, 7), at: c.commit.author.date, sha: c.sha.slice(0, 7), url: c.html_url, ...bulletsOf(c.commit.message) }));
+          return rels.length ? { id, label, repo, latest: rels[0].sha, at: rels[0].at, list: rels } : null;
+        } catch { return null; }   // rate limited: try again next time
+      }));
+      const out = got.filter((x): x is Ver => !!x);
+      if (alive && out.length) { setV(out); try { localStorage.setItem('pe-versions3', JSON.stringify({ at: Date.now(), v: out })); } catch { /* ignore */ } }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [v]);
   return v;
+}
+
+type SuiteRel = { v: string; at: string; title: string; notes: string[] };
+function useReleases(): SuiteRel[] | null {
+  const [r, setR] = useState<SuiteRel[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    fetch(`${import.meta.env.BASE_URL}releases.json?t=${Date.now()}`).then((x) => x.json()).then((j) => alive && setR(j as SuiteRel[])).catch(() => alive && setR([]));
+    return () => { alive = false; };
+  }, []);
+  return r;
 }
 
 function usePage<T>(items: T[], size = 10) {
@@ -149,6 +175,7 @@ const css = `
 .cs-btn:hover{border-color:var(--accent);color:var(--accent)}
 .cs-tally{position:relative;display:flex;justify-content:space-between;gap:10px;padding:7px 14px;font-size:13.5px}.cs-tally i{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);opacity:.55}.cs-tally b{font-variant-numeric:tabular-nums}
 .cs-chart-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:28px 0 10px}.cs-filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.cs-chip{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:4px 11px;font:600 12px inherit;cursor:pointer}.cs-chip.on{background:var(--accent);border-color:var(--accent);color:#fff}.cs-chip.chk{display:inline-flex;gap:5px;align-items:center}.cs-chip.chk input{margin:0}.cs-sep{width:1px;height:18px;background:var(--line);margin:0 4px}.cs-pager{display:flex;gap:6px;align-items:center;justify-content:flex-end;padding:8px 12px;font-size:12.5px}
+.cs-vers{display:grid}.cs-ver{border-top:1px solid var(--line);padding:10px 14px}.cs-ver:first-child{border-top:0}.cs-ver summary{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;cursor:pointer;font-size:14px}.cs-vtag{background:var(--accent);color:#fff;border-radius:999px;padding:1px 9px;font:700 12px inherit}.cs-rel{margin:10px 0 4px;padding-left:0;list-style:none;display:grid;gap:12px}.cs-rel-h{display:flex;gap:12px;align-items:baseline;font-size:13px}.cs-rel ul{margin:4px 0 0 18px;padding:0;font-size:13px;color:var(--muted,#666)}
 .cs-btn.sm{padding:4px 10px;font-size:12px}
 .cs-tot{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:20px}
 .cs-tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
@@ -202,6 +229,7 @@ export default function Console() {
   const [amount, setAmount] = useState<Record<string, string>>({});
   type Proof = { id: string; username: string; created_at: string; role: string; school: string; status: string; link: string };
   const versions = useVersions();
+  const releases = useReleases();
   const [range, setRange] = useState(14);
   const [group, setGroup] = useState<'day' | 'week'>('day');
   const [shown, setShown] = useState<Record<string, boolean>>({ signups: true, videos: true, checks: true, llm_tokens: true });
@@ -336,11 +364,43 @@ export default function Console() {
                       <div style={{ marginTop: 12 }}><TallyTable title="I am a" rows={aud.roles} /></div>
                     </>
                   )}
-                  <h2>Versions</h2>
+                  <h2>Suite version {releases?.[0] ? `v${releases[0].v}` : ''}{releases?.[0] ? <small style={{ fontWeight: 400, marginLeft: 10 }} className="cs-dim">last release {fmt(releases[0].at)} ({ago(releases[0].at)})</small> : null}</h2>
+                  <div className="cs-wrap" style={{ padding: '4px 0' }}>
+                    {!releases ? <p className="cs-note sub">Loading…</p> : (
+                      <ol className="cs-rel" style={{ padding: '10px 16px' }}>
+                        {releases.map((r) => (
+                          <li key={r.v}>
+                            <div className="cs-rel-h"><span className="cs-vtag">v{r.v}</span><b>{r.title}</b><span className="cs-dim">{fmt(r.at)}</span></div>
+                            <ul>{r.notes.map((n, i) => <li key={i}>{n}</li>)}</ul>
+                          </li>
+                        ))}
+                      </ol>
+                    )}
+                  </div>
+
+                  <h2>Changes per app</h2>
                   <div className="cs-wrap">
                     {!versions ? <p className="cs-note sub">Loading versions…</p> : (
-                      <table><thead><tr><th>App</th><th>Version</th><th>Last update</th><th>What changed</th></tr></thead>
-                        <tbody>{versions.map((v) => <tr key={v.id}><td>{v.label}</td><td><b>v{v.v}</b></td><td>{fmt(v.at)} <span className="cs-dim">({ago(v.at)})</span></td><td className="cs-dim">{v.msg}</td></tr>)}</tbody></table>
+                      <div className="cs-vers">
+                        {versions.map((v) => (
+                          <details key={v.id} className="cs-ver">
+                            <summary>
+                              <b>{v.label}</b>
+                              <span className="cs-vtag">{v.latest}</span>
+                              <span className="cs-dim">updated {fmt(v.at)} ({ago(v.at)})</span>
+                            </summary>
+                            <ol className="cs-rel">
+                              {v.list.map((r) => (
+                                <li key={r.sha}>
+                                  <div className="cs-rel-h"><span className="cs-dim">{fmt(r.at)}</span><a href={r.url} target="_blank" rel="noopener noreferrer" className="cs-dim">{r.sha}</a></div>
+                                  <div>{r.title}</div>
+                                  {r.bullets.length > 0 && <ul>{r.bullets.map((b, i) => <li key={i}>{b}</li>)}</ul>}
+                                </li>
+                              ))}
+                            </ol>
+                          </details>
+                        ))}
+                      </div>
                     )}
                   </div>
                   {when && <p className="sub" style={{ margin: '8px 0 0' }}>These numbers were read {fmt(when)} ({ago(when)}).</p>}
@@ -510,8 +570,8 @@ export default function Console() {
                       <thead><tr><th>Email</th><th>Paper</th><th>Status</th><th>When</th></tr></thead>
                       <tbody>{oP.rows.map((o) => <tr key={o.id}><td>{o.email}</td><td>{o.arxiv}</td><td>{pill(o.status)}</td><td>{fmt(o.created_at)}</td></tr>)}</tbody>
                     </table>
-                    <Pager p={oP} />
                   )}
+                  <Pager p={oP} />
                 </div>
               </div>
               <div>
@@ -522,8 +582,8 @@ export default function Console() {
                       <thead><tr><th>Rating</th><th>Comment</th><th>When</th></tr></thead>
                       <tbody>{fP.rows.map((f) => <tr key={f.id}><td>{f.rating ?? ''}</td><td>{f.comment}<div className="sub" style={{ fontSize: 12 }}>{f.kind} {f.arxiv}</div></td><td>{fmt(f.created_at)}</td></tr>)}</tbody>
                     </table>
-                    <Pager p={fP} />
                   )}
+                  <Pager p={fP} />
                 </div>
               </div>
             </div>
